@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hướng dẫn chấm thi</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>main{max-width:860px}h2{color:var(--xanh);margin-top:26px}li{margin:6px 0}code{background:#eef2f6;padding:1px 6px;border-radius:5px}</style>
+</head>
+<body>
+<header class="top">
+  <div><h1>Hướng dẫn sử dụng</h1><div class="sub">Chấm thi trắc nghiệm bằng điện thoại – miễn phí</div></div>
+  <nav><a href="index.html">Trang chủ</a></nav>
+</header>
+<main>
+<section class="card">
+<h2>A. Triển khai lần đầu (người quản trị, khoảng 30 phút)</h2>
+<ol>
+  <li><b>Google Sheet + Apps Script.</b> Tạo một Google Sheet mới tên <i>ChamThi</i> bằng tài khoản Google 5 TB → menu <b>Tiện ích mở rộng → Apps Script</b> → xóa mã mẫu, dán toàn bộ tệp <code>apps-script/Code.gs</code> → Lưu.</li>
+  <li>Chọn hàm <code>caiDat</code> → bấm <b>Chạy</b> → cấp quyền. Sheet sẽ có các trang <i>CaiDat, KiThi, DapAn, KetQua</i> và Drive có thư mục <i>ChamThi_AnhPhieu</i>.</li>
+  <li>Mở trang <i>CaiDat</i>, <b>đổi</b> <code>PIN_GV</code> (giáo viên) và <code>PIN_QUANTRI</code> (quản trị).</li>
+  <li>Bấm <b>Triển khai → Tùy chọn triển khai mới → Ứng dụng web</b>: Thực thi với tư cách <i>Tôi</i>; Người có quyền truy cập <i>Bất kỳ ai</i> → Triển khai → chép <b>URL kết thúc bằng /exec</b>.</li>
+  <li><b>GitHub.</b> Tạo kho <code>chamthi</code>, tải lên toàn bộ thư mục mã nguồn. Mở <code>assets/config.js</code>, dán URL /exec vào <code>API_URL</code>.</li>
+  <li>Vào <b>Settings → Pages</b>: Source = <i>Deploy from a branch</i>, nhánh <i>main</i>. Ở <b>Custom domain</b> nhập <code>chamthi.nhp.io.vn</code>, đánh dấu <b>Enforce HTTPS</b>.</li>
+  <li><b>Nhân Hòa (DNS).</b> Trong quản lí tên miền <code>nhp.io.vn</code>, thêm bản ghi <b>CNAME</b>: tên <code>chamthi</code> → giá trị <code>vothanhhoa.github.io</code>. Chờ 5 – 30 phút.</li>
+</ol>
+<p class="muted">Khi sửa Code.gs, chọn <b>Triển khai → Quản lý triển khai → Sửa → Phiên bản mới</b> để giữ nguyên URL.</p>
+</section>
+<section class="card">
+<h2>B. Trước buổi kiểm tra</h2>
+<ol>
+  <li>In phiếu trả lời mẫu TNMaker đúng loại: lớp 12 dùng <b>24-4 không tự luận</b>, lớp 10 dùng <b>12-4 có tự luận 2 mặt</b>. In 100%, không co giãn, giữ đủ các ô vuông đen.</li>
+  <li>Vào <b>Quản trị</b>: nhập PIN quản trị → điền tên kì thi, khối, mẫu phiếu, điểm mỗi câu/ý (0,25) → mở file <i>Dap_an_nhap_TNMaker</i>, sheet <i>Dap_an</i>, chọn toàn bộ bảng → Ctrl+C → dán vào ô đáp án → <b>Lưu kì thi</b>.</li>
+  <li><b>Chấm thử</b>: tô một phiếu đúng hoàn toàn theo một mã đề, quét thử phải ra đủ điểm.</li>
+</ol>
+</section>
+<section class="card">
+<h2>C. Chấm bài</h2>
+<ol>
+  <li>Trên tivi lớp: mở trang chủ → nhập tên lớp → <b>Mở màn hình tivi</b> (hiện mã QR).</li>
+  <li>Giáo viên dùng camera điện thoại quét mã QR → trang <b>Quét chấm bài</b> mở ra (đã gắn với tivi) → nhập PIN, chọn kì thi → <b>Bắt đầu quét</b>.</li>
+  <li>Đặt phiếu trên mặt phẳng, đủ sáng, đưa vào khung sao cho thấy đủ <b>4 ô vuông đen ở 4 góc</b>, giữ yên 1 giây. Máy rung là đã đọc xong: hiện điểm, câu đúng (xanh), câu sai (đỏ), đáp án đúng (khung xanh dương). Phiếu không lỗi được tự lưu; phiếu có cảnh báo (tô 2 ô, tô mờ, thiếu SBD) giáo viên kiểm tra, sửa SBD/mã đề nếu cần rồi bấm <b>Lưu kết quả</b>.</li>
+  <li>Kết quả và ảnh phiếu tự hiện lên tivi, đồng thời lưu vào Google Sheet và Drive.</li>
+  <li>Lớp 10, 11 (có tự luận): chấm tay câu tự luận, nhập điểm ở <b>Quản trị → Bảng điểm</b>, cột Tự luận; tổng tự cộng.</li>
+  <li>Bấm <b>Xuất Excel</b>, chép cột <i>Điểm GK</i> sang file mẫu nhập điểm của vnEdu.</li>
+</ol>
+<p class="muted">Không quét trực tiếp được? Chụp ảnh phiếu bằng camera thường rồi bấm <b>Chọn ảnh phiếu</b> trên trang quét (chọn được nhiều ảnh một lúc).</p>
+</section>
+<section class="card">
+<h2>D. Lưu ý bảo mật</h2>
+<ul>
+  <li>Đáp án chỉ tải về khi nhập đúng PIN; không chia sẻ PIN cho học sinh.</li>
+  <li>Ảnh bài làm là dữ liệu cá nhân của học sinh: chỉ lưu trong Drive của nhà trường, không chia sẻ công khai thư mục ảnh.</li>
+  <li>Không nhập mật khẩu vnEdu vào hệ thống này; điểm được chuyển sang vnEdu bằng file Excel.</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

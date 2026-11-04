@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Màn hình lớp</title>
+<link rel="stylesheet" href="assets/style.css">
+<script src="assets/vendor/qrcode.min.js"></script>
+</head>
+<body class="tv">
+<div class="tvwrap">
+  <div class="tvmain">
+    <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap">
+      <h1 style="margin:0;color:var(--xanh);font-size:28px" id="tieuDe">Màn hình chấm bài</h1>
+      <span class="muted" id="trangThai">Đang chờ giáo viên quét mã QR…</span>
+    </div>
+    <div id="moi" style="flex:1;display:flex;gap:18px;align-items:flex-start;margin-top:12px;min-height:0">
+      <img id="anh" alt="" style="flex:1;min-width:0">
+      <div style="width:300px">
+        <div class="muted">Số báo danh</div><div style="font-size:34px;font-weight:800" id="sbd">–</div>
+        <div class="muted" style="margin-top:8px">Mã đề</div><div style="font-size:24px;font-weight:700" id="made">–</div>
+        <div class="muted" style="margin-top:8px">Điểm trắc nghiệm</div><div class="diem" style="font-size:72px" id="diem">–</div>
+        <div class="muted" style="margin-top:10px">Câu sai</div><div id="sai" style="font-size:18px;font-weight:600;color:var(--do)">–</div>
+        <div id="co" style="margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+  <div class="tvside">
+    <div class="qr"><div id="qrc"></div><div style="margin-top:8px;font-weight:700">Giáo viên quét mã để chấm bài</div>
+      <div class="muted" id="maPhien"></div></div>
+    <div class="lich"><b>Đã chấm: <span id="dem">0</span> bài</b><div id="lich" style="display:block"></div></div>
+    <button class="phu" onclick="document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()">Toàn màn hình</button>
+  </div>
+</div>
+<script src="assets/config.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const $ = (id) => document.getElementById(id), qs = new URLSearchParams(location.search);
+const lop = qs.get("lop") || "", kithi = qs.get("kithi") || "";
+let phien = sessionStorage.getItem("ct_phien_" + lop);
+if (!phien) { phien = Math.random().toString(36).slice(2, 8).toUpperCase(); sessionStorage.setItem("ct_phien_" + lop, phien); }
+$("tieuDe").textContent = lop ? `Lớp ${lop} – chấm bài` : "Màn hình chấm bài";
+$("maPhien").textContent = "Mã phiên: " + phien;
+const base = location.href.replace(/tv\.html.*$/, "");
+const link = `${base}quet.html?phien=${phien}&lop=${encodeURIComponent(lop)}${kithi ? "&kithi=" + encodeURIComponent(kithi) : ""}`;
+new QRCode($("qrc"), { text: link, width: 220, height: 220 });
+let sau = 0, dem = 0;
+async function poll() {
+  try {
+    if (CT.ready()) {
+      const ds = await CT.get({ api: "tv", phien, sau });
+      for (const it of ds) {
+        sau = Math.max(sau, it.t); dem++;
+        $("trangThai").textContent = "Đang chấm…";
+        $("anh").src = it.anhNho || ""; $("sbd").textContent = it.sbd; $("made").textContent = it.made;
+        $("diem").textContent = CT.fmt(it.diem);
+        $("sai").textContent = (it.sai && it.sai.length) ? it.sai.join(", ") : "Không sai câu nào 🎉";
+        $("co").innerHTML = (it.co || []).map((f) => `<div class="tag canh" style="margin:2px 0">${CT.esc(f)}</div>`).join("");
+        $("dem").textContent = dem;
+        $("lich").insertAdjacentHTML("afterbegin", `<div><span>SBD ${CT.esc(it.sbd)}</span><b>${CT.fmt(it.diem)}</b></div>`);
+      }
+    } else $("trangThai").textContent = "Chưa cấu hình API_URL";
+  } catch (e) { $("trangThai").textContent = "Mất kết nối, đang thử lại…"; }
+  setTimeout(poll, 2500);
+}
+poll();
+</script>
+</body>
+</html>
