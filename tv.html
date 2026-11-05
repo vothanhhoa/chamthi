@@ -17,7 +17,7 @@
     <div id="moi" style="flex:1;display:flex;gap:18px;align-items:flex-start;margin-top:12px;min-height:0">
       <img id="anh" alt="" style="flex:1;min-width:0">
       <div style="width:300px">
-        <div class="muted">Số báo danh</div><div style="font-size:34px;font-weight:800" id="sbd">–</div>
+        <div class="muted">SBD / STT</div><div style="font-size:34px;font-weight:800" id="sbd">–</div>
         <div class="muted" style="margin-top:8px">Mã đề</div><div style="font-size:24px;font-weight:700" id="made">–</div>
         <div class="muted" style="margin-top:8px">Điểm trắc nghiệm</div><div class="diem" style="font-size:72px" id="diem">–</div>
         <div class="muted" style="margin-top:10px">Câu sai</div><div id="sai" style="font-size:18px;font-weight:600;color:var(--do)">–</div>
@@ -38,7 +38,7 @@
 const $ = (id) => document.getElementById(id), qs = new URLSearchParams(location.search);
 const lop = qs.get("lop") || "", kithi = qs.get("kithi") || "";
 let phien = sessionStorage.getItem("ct_phien_" + lop);
-if (!phien) { phien = Math.random().toString(36).slice(2, 8).toUpperCase(); sessionStorage.setItem("ct_phien_" + lop, phien); }
+if (!phien) { phien = (Math.random().toString(36).slice(2, 7) + Math.random().toString(36).slice(2, 7)).toUpperCase(); sessionStorage.setItem("ct_phien_" + lop, phien); }
 $("tieuDe").textContent = lop ? `Lớp ${lop} – chấm bài` : "Màn hình chấm bài";
 $("maPhien").textContent = "Mã phiên: " + phien;
 const base = location.href.replace(/tv\.html.*$/, "");
@@ -52,7 +52,7 @@ async function poll() {
       for (const it of ds) {
         sau = Math.max(sau, it.t); dem++;
         $("trangThai").textContent = "Đang chấm…";
-        $("anh").src = it.anhNho || ""; $("sbd").textContent = it.sbd; $("made").textContent = it.made;
+        $("anh").src = it.anhNho || ""; $("sbd").textContent = it.sbd + (it.ten ? " – " + it.ten : ""); $("made").textContent = it.made;
         $("diem").textContent = CT.fmt(it.diem);
         $("sai").textContent = (it.sai && it.sai.length) ? it.sai.join(", ") : "Không sai câu nào 🎉";
         $("co").innerHTML = (it.co || []).map((f) => `<div class="tag canh" style="margin:2px 0">${CT.esc(f)}</div>`).join("");

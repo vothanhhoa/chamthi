@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>In phiếu viết tay</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  .to { width: 210mm; height: 297mm; position: relative; background: #fff; margin: 0 auto 10mm; box-shadow: 0 2px 10px rgba(0,0,0,.15); overflow: hidden; }
+  .nua { position: absolute; left: 0; width: 210mm; height: 148.5mm; }
+  .nua.duoi { top: 148.5mm; border-top: 0.3mm dashed #999; }
+  .khungp { position: absolute; left: 12mm; top: 10.25mm; width: 186mm; height: 128mm; font-family: "Times New Roman", serif; color: #000; }
+  .khungp > * { position: absolute; }
+  .vg { background: #000; }
+  .t1 { left: 0; width: 186mm; top: 3mm; text-align: center; font-weight: bold; font-size: 15pt; }
+  .t2 { left: 0; width: 186mm; top: 9.5mm; text-align: center; font-size: 11pt; font-style: italic; }
+  .tx { font-size: 11.5pt; white-space: nowrap; }
+  .o { border: 0.4mm solid #c2c2c2; border-radius: 0.6mm; } /* viền xám nhạt: máy tự bỏ qua khi đọc chữ */
+  .om { border: 0.3mm solid #333; width: 6mm; height: 6.5mm; }
+  .so { font-size: 11pt; font-weight: bold; text-align: right; width: 9mm; }
+  .hd { left: 4mm; top: 31.6mm; font-size: 9.5pt; font-style: italic; white-space: nowrap; }
+  .cat { position: absolute; left: 3mm; top: -3.2mm; font-size: 8pt; color: #999; }
+  @media print { body { background: #fff; } header.top, .khongin { display: none !important; } main { padding: 0; max-width: none; } .to { margin: 0; box-shadow: none; page-break-after: always; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div><h1>In phiếu trả lời viết tay</h1><div class="sub">Học sinh viết chữ A, B, C, D vào ô · 2 phiếu trên một tờ A4, cắt đôi</div></div>
+  <nav><a href="index.html">Trang chủ</a><a href="kithi.html">Bài kiểm tra</a></nav>
+</header>
+<main>
+  <section class="card khongin">
+    <div class="row">
+      <div><label>Tiêu đề trên phiếu</label><input id="tieu" placeholder="Kiểm tra giữa kì I – Toán 7"></div>
+      <div><label>Tên trường</label><input id="truong" placeholder="Trường THCS …"></div>
+      <div style="flex:0 0 110px"><label>Số câu (1–40)</label><input id="n" type="number" min="1" max="40" value="20"></div>
+      <div style="flex:0 0 110px"><label>Số tờ A4</label><input id="to" type="number" min="1" max="30" value="1"></div>
+    </div>
+    <p class="muted">Mỗi tờ A4 in được 2 phiếu, in xong cắt theo đường gạch giữa tờ. Khi in, Thầy/Cô chọn khổ <b>A4</b>, tỉ lệ <b>100% (Thực tế)</b>, lề <b>Không</b>. Giữ nguyên 4 ô vuông đen ở góc và không ghi đè lên, vì máy dùng các ô này để định vị phiếu.</p>
+    <button id="ve">Cập nhật mẫu</button> <button class="luc" onclick="window.print()">🖨 In phiếu</button>
+  </section>
+  <div id="cacTo"></div>
+</main>
+<script src="assets/app.js"></script>
+<script src="assets/vt.js"></script>
+<script>
+const $ = (id) => document.getElementById(id), qs = new URLSearchParams(location.search);
+["tieu", "truong", "n"].forEach((k) => { if (qs.get(k)) $(k).value = qs.get(k); });
+if (!qs.get("truong")) $("truong").value = CT.LS.get("truong", "");
+const mm = (v) => v + "mm";
+function phieu() {
+  const L = VT.layout(Number($("n").value) || 20);
+  let h = "";
+  const sq = (x, y, s) => `<div class="vg" style="left:${mm(x - s / 2)};top:${mm(y - s / 2)};width:${mm(s)};height:${mm(s)}"></div>`;
+  [[0, 0], [L.FW, 0], [L.FW, L.FH], [0, L.FH]].forEach(([x, y]) => (h += sq(x, y, L.SQ)));
+  L.CHECKS.forEach(([x, y]) => (h += sq(x, y, L.CHK)));
+  h += `<div class="t1">PHIẾU TRẢ LỜI TRẮC NGHIỆM</div><div class="t2">${CT.esc($("tieu").value)}</div>`;
+  h += `<div class="tx" style="left:5mm;top:17mm">Trường: ${CT.esc($("truong").value) || "……………………………………………"}</div>`;
+  h += `<div class="tx" style="left:5mm;top:24.5mm">Họ và tên: ……………………………………… Lớp: ………</div>`;
+  h += `<div class="tx" style="left:130mm;top:17.6mm">Mã đề:</div><div class="tx" style="left:130mm;top:25.1mm">STT:</div>`;
+  for (let i = 0; i < 3; i++) h += `<div class="om" style="left:${mm(146 + i * 7)};top:16.6mm"></div>`;
+  for (let i = 0; i < 2; i++) h += `<div class="om" style="left:${mm(146 + i * 7)};top:24.1mm"></div>`;
+  h += `<div class="hd">Viết IN HOA một chữ <b>A, B, C</b> hoặc <b>D</b> vào giữa ô, nét đậm, không chạm viền. Muốn sửa: gạch bỏ, rồi xin phiếu mới hoặc báo thầy/cô.</div>`;
+  L.boxes.forEach((b) => {
+    h += `<div class="so" style="left:${mm(b.lx - 1)};top:${mm(b.y + 1.3)}">${b.cau}.</div>`;
+    h += `<div class="o" style="left:${mm(b.x)};top:${mm(b.y)};width:${mm(b.w)};height:${mm(b.h)};box-sizing:border-box"></div>`;
+  });
+  return `<div class="khungp">${h}</div>`;
+}
+function ve() {
+  const p = phieu(), n = Math.max(1, Math.min(30, Number($("to").value) || 1));
+  CT.LS.set("truong", $("truong").value);
+  $("cacTo").innerHTML = Array.from({ length: n }, () => `<div class="to"><div class="nua">${p}</div><div class="nua duoi"><div class="cat">✂</div>${p}</div></div>`).join("");
+}
+$("ve").onclick = ve; ["tieu", "truong", "n"].forEach((k) => ($(k).onchange = ve));
+ve();
+</script>
+</body>
+</html>

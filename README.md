@@ -1,18 +1,22 @@
-# Chấm thi trắc nghiệm bằng điện thoại – chamthi.nhp.io.vn
+# Chấm thi trắc nghiệm bằng điện thoại – bản 4
 
-Hệ thống miễn phí cho giáo viên Trường THPT Bình Mỹ: quét phiếu trả lời mẫu TNMaker (24-4, 12-4) bằng camera điện thoại,
-chấm ngay trên trình duyệt, hiện kết quả lên tivi lớp, lưu điểm và ảnh phiếu vào Google Sheet/Drive, xuất Excel nhập vnEdu.
+Trang web miễn phí cho mọi giáo viên: https://vothanhhoa.github.io/chamthi/
+
+- Mỗi giáo viên một tài khoản (tên đăng nhập + mật khẩu), chỉ thấy bài chấm của mình; quản trị xem tất cả.
+- Phiếu tô TNMaker 24-4, 12-4 (THPT) và phiếu viết chữ A/B/C/D in từ trang (tiểu học, THCS), hoặc nhập tay.
+- Ảnh phiếu, điểm lưu trên Google Drive/Sheet của quản trị; tivi lớp qua mã QR; xuất Excel nhập vnEdu.
 
 | Tệp | Chức năng |
 |---|---|
-| `index.html` | Trang chủ |
-| `quet.html` | Giáo viên quét và chấm bài (camera hoặc chọn ảnh) |
-| `tv.html?lop=12A1` | Màn hình tivi lớp, có mã QR để giáo viên kết nối |
-| `quantri.html` | Tạo kì thi, dán đáp án, nhập điểm tự luận, xuất Excel |
-| `huong-dan.html` | Hướng dẫn triển khai và sử dụng |
-| `assets/omr.js` | Bộ đọc phiếu (JavaScript thuần) |
-| `assets/layouts.json` | Vị trí các ô của phiếu 24-4 và 12-4 |
-| `assets/config.js` | Dán URL Apps Script vào đây |
+| `index.html` | Trang chủ, 4 bước bắt đầu |
+| `taikhoan.html` | Đăng kí, đăng nhập, đổi mật khẩu |
+| `kithi.html` | Bài kiểm tra của tôi: tạo bài, đáp án, kết quả, thống kê, Excel |
+| `quet.html` | Quét chấm bằng camera / chọn ảnh / nhập tay |
+| `phieu.html` | In phiếu viết chữ (2 phiếu/A4, tối đa 40 câu) |
+| `tv.html` | Màn hình tivi lớp có mã QR |
+| `quantri.html` | Quản trị tài khoản giáo viên |
+| `huong-dan.html` | Hướng dẫn |
+| `assets/omr.js`, `assets/vt.js` | Bộ đọc phiếu tô và phiếu viết chữ (JavaScript thuần, chạy trên điện thoại) |
 | `apps-script/Code.gs` | Máy chủ Google Apps Script |
 
-Triển khai: xem `huong-dan.html`, mục A. Thư viện kèm theo: qrcodejs (MIT), SheetJS Community Edition (Apache-2.0).
+Thư viện kèm theo: qrcodejs (MIT), SheetJS Community Edition (Apache-2.0).

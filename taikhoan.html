@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tài khoản giáo viên</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="top">
+  <div><h1>Tài khoản giáo viên</h1><div class="sub">Mỗi giáo viên một tài khoản · chỉ mình thấy bài chấm của mình</div></div>
+  <nav><a href="index.html">Trang chủ</a><a href="huong-dan.html">Hướng dẫn</a></nav>
+</header>
+<main style="max-width:560px">
+  <section class="card" id="khuVao">
+    <div class="tabs"><button class="tab on" data-t="dn">Đăng nhập</button><button class="tab" data-t="dk">Đăng kí mới</button></div>
+    <div id="dn">
+      <label>Tên đăng nhập</label><input id="dnTen" autocomplete="username" autocapitalize="none" placeholder="VD: hoa.binhmy hoặc số điện thoại">
+      <label>Mật khẩu</label><input id="dnMk" type="password" autocomplete="current-password">
+      <p><button id="nutDN">Đăng nhập</button></p>
+      <p class="muted">Quên mật khẩu? Nhờ quản trị trang (Thầy Võ Thanh Hòa) đặt lại.</p>
+    </div>
+    <div id="dk" hidden>
+      <label>Họ và tên giáo viên *</label><input id="dkTen" placeholder="Nguyễn Văn A">
+      <div class="row">
+        <div><label>Trường</label><input id="dkTruong" placeholder="THPT Bình Mỹ"></div>
+        <div><label>Môn dạy</label><input id="dkMon" placeholder="Công nghệ"></div>
+      </div>
+      <label>Tên đăng nhập * <span class="muted">(chữ không dấu, số; ví dụ số điện thoại)</span></label>
+      <input id="dkDN" autocapitalize="none" autocomplete="username">
+      <div class="row">
+        <div><label>Mật khẩu * (ít nhất 6 kí tự)</label><input id="dkMk" type="password" autocomplete="new-password"></div>
+        <div><label>Nhập lại mật khẩu *</label><input id="dkMk2" type="password" autocomplete="new-password"></div>
+      </div>
+      <p class="muted">Bài chấm, điểm và ảnh phiếu của Thầy/Cô được lưu trên Google Drive của trang (do Thầy Võ Thanh Hòa quản lí), chỉ Thầy/Cô và quản trị xem được. Không ghi họ tên đầy đủ của học sinh nếu không cần; dùng số báo danh hoặc STT.</p>
+      <p><button id="nutDK">Đăng kí</button></p>
+    </div>
+  </section>
+
+  <section class="card" id="khuToi" hidden>
+    <h2>Xin chào <span id="tenToi"></span></h2>
+    <p class="muted">Tên đăng nhập: <b id="dnToi"></b> <span id="vaiTro"></span></p>
+    <div class="row">
+      <div><label>Họ và tên</label><input id="hsTen"></div>
+      <div><label>Trường</label><input id="hsTruong"></div>
+      <div><label>Môn</label><input id="hsMon"></div>
+    </div>
+    <p><button class="phu" id="luuHS">Lưu thông tin</button></p>
+    <h2 style="margin-top:16px">Đổi mật khẩu</h2>
+    <div class="row">
+      <div><label>Mật khẩu cũ</label><input id="mkCu" type="password"></div>
+      <div><label>Mật khẩu mới</label><input id="mkMoi" type="password"></div>
+    </div>
+    <p><button class="phu" id="doiMK">Đổi mật khẩu</button></p>
+    <p style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn" href="kithi.html">📝 Bài kiểm tra của tôi</a><a class="btn" href="quet.html">📷 Quét chấm bài</a><button class="do" id="dangXuat">Đăng xuất</button></p>
+  </section>
+</main>
+<script src="assets/config.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const $ = (id) => document.getElementById(id), ve = new URLSearchParams(location.search).get("ve");
+document.querySelectorAll(".tab").forEach((b) => (b.onclick = () => {
+  document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("on", x === b));
+  $("dn").hidden = b.dataset.t !== "dn"; $("dk").hidden = b.dataset.t !== "dk";
+}));
+function xong(d) { CT.luuPhien(d); CT.toast("Đã đăng nhập", "ok"); setTimeout(() => (location.href = ve && /^[\w.-]+\.html/.test(ve) ? ve : "kithi.html"), 500); }
+async function chay(btn, fn) { btn.disabled = true; try { await fn(); } catch (e) { CT.toast(e.message, "loi"); } btn.disabled = false; }
+$("nutDN").onclick = () => chay($("nutDN"), async () => xong(await CT.post({ action: "dangNhap", tenDN: $("dnTen").value.trim(), matKhau: $("dnMk").value })));
+$("dnMk").onkeydown = (e) => { if (e.key === "Enter") $("nutDN").click(); };
+$("nutDK").onclick = () => chay($("nutDK"), async () => {
+  if ($("dkMk").value !== $("dkMk2").value) throw new Error("Hai mật khẩu không giống nhau");
+  xong(await CT.post({ action: "dangKy", tenDN: $("dkDN").value.trim(), matKhau: $("dkMk").value, hoTen: $("dkTen").value.trim(), truong: $("dkTruong").value.trim(), mon: $("dkMon").value.trim() }));
+});
+function hienToi() {
+  const u = CT.toi(); $("khuVao").hidden = !!u; $("khuToi").hidden = !u; if (!u) return;
+  $("tenToi").textContent = u.hoTen; $("dnToi").textContent = u.tenDN; $("vaiTro").innerHTML = u.vaiTro === "admin" ? '<span class="tag ok">Quản trị</span>' : "";
+  $("hsTen").value = u.hoTen || ""; $("hsTruong").value = u.truong || ""; $("hsMon").value = u.mon || "";
+}
+$("luuHS").onclick = () => chay($("luuHS"), async () => {
+  const t = await CT.post({ action: "capNhatHoSo", hoTen: $("hsTen").value.trim(), truong: $("hsTruong").value.trim(), mon: $("hsMon").value.trim() });
+  CT.LS.set("toi", JSON.stringify(t)); hienToi(); CT.toast("Đã lưu", "ok");
+});
+$("doiMK").onclick = () => chay($("doiMK"), async () => { await CT.post({ action: "doiMatKhau", cu: $("mkCu").value, moi: $("mkMoi").value }); $("mkCu").value = $("mkMoi").value = ""; CT.toast("Đã đổi mật khẩu", "ok"); });
+$("dangXuat").onclick = CT.dangXuat;
+hienToi();
+if (CT.daDangNhap()) CT.post({ action: "toi" }).then((t) => { CT.LS.set("toi", JSON.stringify(t)); hienToi(); }).catch(() => {});
+</script>
+</body>
+</html>

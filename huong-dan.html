@@ -5,55 +5,62 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hướng dẫn chấm thi</title>
 <link rel="stylesheet" href="assets/style.css">
-<style>main{max-width:860px}h2{color:var(--xanh);margin-top:26px}li{margin:6px 0}code{background:#eef2f6;padding:1px 6px;border-radius:5px}</style>
+<style>main{max-width:880px}h2{color:var(--xanh);margin-top:22px}li{margin:6px 0}code{background:#eef2f6;padding:1px 6px;border-radius:5px}</style>
 </head>
 <body>
 <header class="top">
-  <div><h1>Hướng dẫn sử dụng</h1><div class="sub">Chấm thi trắc nghiệm bằng điện thoại – miễn phí</div></div>
+  <div><h1>Hướng dẫn sử dụng</h1><div class="sub">Chấm thi trắc nghiệm bằng điện thoại – miễn phí cho mọi giáo viên</div></div>
   <nav><a href="index.html">Trang chủ</a></nav>
 </header>
 <main>
 <section class="card">
-<h2>A. Triển khai lần đầu (người quản trị, khoảng 30 phút)</h2>
+<h2 style="margin-top:0">A. Dành cho giáo viên</h2>
 <ol>
-  <li><b>Google Sheet + Apps Script.</b> Tạo một Google Sheet mới tên <i>ChamThi</i> bằng tài khoản Google 5 TB → menu <b>Tiện ích mở rộng → Apps Script</b> → xóa mã mẫu, dán toàn bộ tệp <code>apps-script/Code.gs</code> → Lưu.</li>
-  <li>Chọn hàm <code>caiDat</code> → bấm <b>Chạy</b> → cấp quyền. Sheet sẽ có các trang <i>CaiDat, KiThi, DapAn, KetQua</i> và Drive có thư mục <i>ChamThi_AnhPhieu</i>.</li>
-  <li>Mở trang <i>CaiDat</i>, <b>đổi</b> <code>PIN_GV</code> (giáo viên) và <code>PIN_QUANTRI</code> (quản trị).</li>
-  <li>Bấm <b>Triển khai → Tùy chọn triển khai mới → Ứng dụng web</b>: Thực thi với tư cách <i>Tôi</i>; Người có quyền truy cập <i>Bất kỳ ai</i> → Triển khai → chép <b>URL kết thúc bằng /exec</b>.</li>
-  <li><b>GitHub.</b> Tạo kho <code>chamthi</code>, tải lên toàn bộ thư mục mã nguồn. Mở <code>assets/config.js</code>, dán URL /exec vào <code>API_URL</code>.</li>
-  <li>Vào <b>Settings → Pages</b>: Source = <i>Deploy from a branch</i>, nhánh <i>main</i>. Ở <b>Custom domain</b> nhập <code>chamthi.nhp.io.vn</code>, đánh dấu <b>Enforce HTTPS</b>.</li>
-  <li><b>Nhân Hòa (DNS).</b> Trong quản lí tên miền <code>nhp.io.vn</code>, thêm bản ghi <b>CNAME</b>: tên <code>chamthi</code> → giá trị <code>vothanhhoa.github.io</code>. Chờ 5 – 30 phút.</li>
+  <li><b>Đăng kí:</b> vào <a href="taikhoan.html">Tài khoản</a> → <i>Đăng kí mới</i>: họ tên, trường, môn, tên đăng nhập, mật khẩu. Lần sau điện thoại tự nhớ đăng nhập trong 30 ngày.</li>
+  <li><b>Tạo bài kiểm tra</b> ở <a href="kithi.html">Bài kiểm tra của tôi</a>:
+    <ul>
+      <li>Nhập tên bài, môn, trường, các lớp sẽ chấm.</li>
+      <li>Chọn <b>loại phiếu</b>: <i>Phiếu tô 24-4 / 12-4</i> (mẫu TNMaker, THPT) hoặc <i>Phiếu viết chữ</i> (học sinh viết A, B, C, D – tiểu học, THCS).</li>
+      <li>Nhập <b>đáp án</b>: mỗi mã đề một dòng. Phiếu tô: <code>101 ABCDABCDABCDABCDABCDABCD ĐSĐSSĐĐSĐSSĐĐSSĐ</code> (24 chữ ABCD rồi 16 chữ Đ/S). Phiếu viết chữ: <code>1 ABCDABCD…</code>. Cũng có thể dán nguyên bảng đáp án từ Excel/TNMaker.</li>
+      <li>Kiểm tra dòng <i>Tổng điểm tối đa: 10 ✓</i> rồi bấm <b>Lưu</b>.</li>
+    </ul></li>
+  <li><b>Phiếu viết chữ:</b> bấm <b>In phiếu viết chữ</b> → in A4, tỉ lệ 100%, mỗi tờ 2 phiếu, cắt đôi. Dặn học sinh viết <b>chữ IN HOA, nét đậm, ở giữa ô</b>; không viết lên 4 ô vuông đen ở góc.</li>
+  <li><b>Chấm:</b> mở <a href="quet.html">Quét chấm bài</a> trên điện thoại → chọn bài, nhập lớp → <b>Bắt đầu quét</b>.
+    <ul>
+      <li>Đặt phiếu trên mặt bàn phẳng, đủ sáng, không bóng đổ; thấy đủ <b>4 ô vuông đen</b> ở góc. Giữ yên khoảng 1 giây, máy rung là đã đọc xong.</li>
+      <li><b>Phiếu tô:</b> máy tự đọc SBD, mã đề, đáp án; phiếu đọc chắc chắn sẽ tự lưu. Phiếu có cảnh báo (tô mờ, tô 2 ô, chưa tô SBD) sẽ dừng lại để giáo viên xem và sửa.</li>
+      <li><b>Phiếu viết chữ:</b> máy đoán từng chữ và hiện ảnh từng ô bên cạnh. Ô <span class="tag canh">vàng</span> là chữ máy chưa chắc: giáo viên nhìn ảnh, bấm chữ đúng. STT tự tăng 1, 2, 3… theo thứ tự quét; có thể nhập họ tên học sinh.</li>
+      <li><b>Nhập tay:</b> phiếu tự làm của giáo viên (không theo mẫu) thì bấm <b>Nhập tay</b> và bấm đáp án của học sinh – điểm tính ngay.</li>
+      <li>Không dùng được camera? Bấm <b>Chọn ảnh phiếu</b> để chấm từ ảnh đã chụp (chọn nhiều ảnh một lần).</li>
+    </ul></li>
+  <li><b>Tivi lớp:</b> trên máy tính nối tivi mở <a href="index.html">Trang chủ</a> → <i>Mở màn hình tivi</i> → giáo viên dùng điện thoại quét mã QR trên tivi; từ đó mỗi bài chấm xong hiện lên tivi.</li>
+  <li><b>Xem điểm, xuất vnEdu:</b> ở mục <i>3. Kết quả chấm</i>: xem điểm, ảnh phiếu, nhập điểm tự luận, thống kê câu sai nhiều, bấm <b>Xuất Excel</b>. Cột <i>Điểm (nhập vnEdu)</i> đã làm tròn 1 chữ số; giáo viên tự đăng nhập vnEdu và nhập/dán điểm.</li>
 </ol>
-<p class="muted">Khi sửa Code.gs, chọn <b>Triển khai → Quản lý triển khai → Sửa → Phiên bản mới</b> để giữ nguyên URL.</p>
 </section>
+
 <section class="card">
-<h2>B. Trước buổi kiểm tra</h2>
-<ol>
-  <li>In phiếu trả lời mẫu TNMaker đúng loại: lớp 12 dùng <b>24-4 không tự luận</b>, lớp 10 dùng <b>12-4 có tự luận 2 mặt</b>. In 100%, không co giãn, giữ đủ các ô vuông đen.</li>
-  <li>Vào <b>Quản trị</b>: nhập PIN quản trị → điền tên kì thi, khối, mẫu phiếu, điểm mỗi câu/ý (0,25) → mở file <i>Dap_an_nhap_TNMaker</i>, sheet <i>Dap_an</i>, chọn toàn bộ bảng → Ctrl+C → dán vào ô đáp án → <b>Lưu kì thi</b>.</li>
-  <li><b>Chấm thử</b>: tô một phiếu đúng hoàn toàn theo một mã đề, quét thử phải ra đủ điểm.</li>
-</ol>
-</section>
-<section class="card">
-<h2>C. Chấm bài</h2>
-<ol>
-  <li>Trên tivi lớp: mở trang chủ → nhập tên lớp → <b>Mở màn hình tivi</b> (hiện mã QR).</li>
-  <li>Giáo viên dùng camera điện thoại quét mã QR → trang <b>Quét chấm bài</b> mở ra (đã gắn với tivi) → nhập PIN, chọn kì thi → <b>Bắt đầu quét</b>.</li>
-  <li>Đặt phiếu trên mặt phẳng, đủ sáng, đưa vào khung sao cho thấy đủ <b>4 ô vuông đen ở 4 góc</b>, giữ yên 1 giây. Máy rung là đã đọc xong: hiện điểm, câu đúng (xanh), câu sai (đỏ), đáp án đúng (khung xanh dương). Phiếu không lỗi được tự lưu; phiếu có cảnh báo (tô 2 ô, tô mờ, thiếu SBD) giáo viên kiểm tra, sửa SBD/mã đề nếu cần rồi bấm <b>Lưu kết quả</b>.</li>
-  <li>Kết quả và ảnh phiếu tự hiện lên tivi, đồng thời lưu vào Google Sheet và Drive.</li>
-  <li>Lớp 10, 11 (có tự luận): chấm tay câu tự luận, nhập điểm ở <b>Quản trị → Bảng điểm</b>, cột Tự luận; tổng tự cộng.</li>
-  <li>Bấm <b>Xuất Excel</b>, chép cột <i>Điểm GK</i> sang file mẫu nhập điểm của vnEdu.</li>
-</ol>
-<p class="muted">Không quét trực tiếp được? Chụp ảnh phiếu bằng camera thường rồi bấm <b>Chọn ảnh phiếu</b> trên trang quét (chọn được nhiều ảnh một lúc).</p>
-</section>
-<section class="card">
-<h2>D. Lưu ý bảo mật</h2>
+<h2 style="margin-top:0">B. Bảo mật và quyền riêng tư</h2>
 <ul>
-  <li>Đáp án chỉ tải về khi nhập đúng PIN; không chia sẻ PIN cho học sinh.</li>
-  <li>Ảnh bài làm là dữ liệu cá nhân của học sinh: chỉ lưu trong Drive của nhà trường, không chia sẻ công khai thư mục ảnh.</li>
-  <li>Không nhập mật khẩu vnEdu vào hệ thống này; điểm được chuyển sang vnEdu bằng file Excel.</li>
+  <li>Mỗi giáo viên chỉ xem được <b>bài kiểm tra và điểm của mình</b>. Quản trị xem được tất cả để hỗ trợ.</li>
+  <li>Ảnh phiếu và điểm lưu trên Google Drive/Sheet của quản trị, <b>không công khai</b>. Ảnh chỉ mở được qua trang này sau khi đăng nhập.</li>
+  <li>Mật khẩu được mã hoá một chiều, quản trị cũng không xem được. Quên mật khẩu thì nhờ quản trị đặt lại.</li>
+  <li>Hạn chế ghi họ tên đầy đủ của học sinh (dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP); dùng SBD hoặc STT là đủ để nhập vnEdu.</li>
+  <li><b>Không</b> nhập mật khẩu vnEdu vào trang này hay đưa cho người khác.</li>
 </ul>
 </section>
+
+<section class="card">
+<h2 style="margin-top:0">C. Dành cho quản trị (Thầy Võ Thanh Hòa)</h2>
+<ol>
+  <li><b>Cập nhật máy chủ:</b> mở Sheet <i>ChamThi</i> → Tiện ích mở rộng → Apps Script → dán đè <code>apps-script/Code.gs</code> → Lưu → chạy hàm <code>caiDat</code> (bổ sung trang tính <i>TaiKhoan</i> và các cột mới) → <b>Triển khai → Quản lý bản triển khai → ✏️ → Phiên bản: Phiên bản mới → Triển khai</b>. Đường link giữ nguyên.</li>
+  <li><b>Cập nhật trang web:</b> tải tất cả tệp lên kho GitHub <code>vothanhhoa/chamthi</code> (ghi đè). Trang chạy ở <code>https://vothanhhoa.github.io/chamthi/</code>.</li>
+  <li><b>Tài khoản quản trị:</b> đăng kí như giáo viên trên trang, rồi mở trang tính <i>TaiKhoan</i>, sửa cột <i>VaiTro</i> của tài khoản đó thành <code>admin</code>. Trang <a href="quantri.html">Quản trị</a>: xem danh sách giáo viên, khoá/mở khoá, đặt lại mật khẩu.</li>
+  <li><b>Giới hạn miễn phí:</b> tài khoản Google cá nhân xử lí khoảng 30 yêu cầu cùng lúc – đủ cho vài chục giáo viên chấm cùng buổi. Nếu báo "mất kết nối", trang tự thử lại; giáo viên bấm Lưu lại.</li>
+  <li>Các dòng <i>PIN_GV, PIN_QUANTRI</i> cũ trong trang tính <i>CaiDat</i> không còn dùng, có thể xoá. <b>Không xoá</b> dòng <i>THU_MUC_ANH</i>.</li>
+</ol>
+</section>
 </main>
+<script src="assets/config.js"></script>
+<script src="assets/app.js"></script>
 </body>
 </html>

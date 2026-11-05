@@ -8,20 +8,39 @@
 </head>
 <body>
 <header class="top">
-  <div><h1>Chấm thi trắc nghiệm bằng điện thoại</h1><div class="sub">Miễn phí · Không cần cài ứng dụng · Dùng phiếu mẫu 24-4, 12-4</div></div>
+  <div><h1>Chấm thi trắc nghiệm bằng điện thoại</h1><div class="sub">Miễn phí cho mọi giáo viên · Không cần cài ứng dụng · Phiếu tô (THPT) và phiếu viết chữ (Tiểu học, THCS)</div></div>
   <nav><a href="huong-dan.html">Hướng dẫn</a></nav>
 </header>
 <main>
+  <section class="card">
+    <h2>Bắt đầu trong 4 bước</h2>
+    <ol class="buoc">
+      <li><b>Đăng kí / đăng nhập</b> bằng tên đăng nhập và mật khẩu riêng. Mỗi giáo viên chỉ thấy bài chấm của mình.</li>
+      <li><b>Tạo bài kiểm tra:</b> nhập tên bài, trường, lớp, chọn loại phiếu, nhập mã đề và đáp án.</li>
+      <li><b>Phát phiếu:</b> phiếu tô TNMaker 24-4 hoặc 12-4, hoặc <a href="phieu.html">in phiếu viết chữ</a> cho học sinh ghi A, B, C, D.</li>
+      <li><b>Quét chấm</b> bằng camera điện thoại, xem lại rồi lưu. Có thể chiếu kết quả lên tivi lớp và xuất Excel nhập vnEdu.</li>
+    </ol>
+    <p id="chao" style="margin:12px 0 0"></p>
+  </section>
   <div class="row">
-    <a class="card" href="quet.html" style="text-decoration:none;color:inherit"><h2>📷 Quét chấm bài</h2><p class="muted">Giáo viên mở trên điện thoại, đưa phiếu vào camera là có điểm.</p></a>
-    <a class="card" href="tv.html" id="lnkTV" style="text-decoration:none;color:inherit"><h2>📺 Màn hình lớp</h2><p class="muted">Mở trên tivi; quét mã QR để bài chấm hiện lên màn hình lớp.</p></a>
-    <a class="card" href="quantri.html" style="text-decoration:none;color:inherit"><h2>⚙️ Quản trị</h2><p class="muted">Tạo kì thi, dán đáp án, nhập điểm tự luận, xuất Excel nhập vnEdu.</p></a>
+    <a class="card" href="kithi.html" style="text-decoration:none;color:inherit"><h2>📝 Bài kiểm tra của tôi</h2><p class="muted">Tạo bài, nhập đáp án, xem điểm, thống kê câu sai nhiều, xuất Excel.</p></a>
+    <a class="card" href="quet.html" style="text-decoration:none;color:inherit"><h2>📷 Quét chấm bài</h2><p class="muted">Mở trên điện thoại, đưa phiếu vào camera là có điểm.</p></a>
+    <a class="card" href="phieu.html" style="text-decoration:none;color:inherit"><h2>🖨 In phiếu viết chữ</h2><p class="muted">Phiếu cho học sinh viết A/B/C/D, 2 phiếu một tờ A4, tối đa 40 câu.</p></a>
   </div>
   <section class="card">
-    <h2>Mở màn hình cho một lớp</h2>
-    <div class="row"><div><input id="lop" placeholder="Nhập tên lớp, ví dụ 12A1"></div><div style="flex:0 0 auto"><button onclick="location.href='tv.html?lop='+encodeURIComponent(document.getElementById('lop').value)">Mở màn hình tivi</button></div></div>
+    <h2>📺 Mở màn hình tivi cho lớp</h2>
+    <p class="muted">Mở trên máy tính nối tivi. Giáo viên quét mã QR hiện trên tivi, bài chấm xong sẽ hiện lên cho cả lớp xem.</p>
+    <div class="row"><div><input id="lop" placeholder="Nhập tên lớp, ví dụ 12A1"></div><div style="flex:0 0 auto"><button onclick="location.href='tv.html?lop='+encodeURIComponent(document.getElementById('lop').value.trim())">Mở màn hình tivi</button></div></div>
   </section>
-  <p class="muted" style="text-align:center">Trường THPT Bình Mỹ · Tổ Tin – KTCN · Thiết kế: Hộ Kinh Doanh NHP</p>
+  <p class="muted" style="text-align:center">Thiết kế: Thầy Võ Thanh Hòa – Trường THPT Bình Mỹ, An Giang · Dữ liệu lưu trên Google Drive của trang, chỉ giáo viên chấm và quản trị xem được.</p>
 </main>
+<script src="assets/config.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const u = CT.toi();
+document.getElementById("chao").innerHTML = u
+  ? `Xin chào <b>${CT.esc(u.hoTen)}</b>. <a class="btn" href="kithi.html">Vào trang bài kiểm tra</a>`
+  : `<a class="btn" href="taikhoan.html">Đăng nhập / Đăng kí miễn phí</a>`;
+</script>
 </body>
 </html>

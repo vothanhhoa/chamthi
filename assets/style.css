@@ -1,4 +1,5 @@
 :root{--xanh:#1f4e79;--xanh-nhat:#e8f1fb;--do:#c0392b;--luc:#1e8449;--vang:#b7950b;--nen:#f4f6f9;--chu:#1d2733;--phu:#5d6d7e;--vien:#d5dde6}
+[hidden]{display:none!important}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--nen);color:var(--chu);font-family:"Segoe UI",Roboto,Arial,sans-serif;font-size:16px;line-height:1.5}
 a{color:var(--xanh)}
@@ -48,3 +49,21 @@ body.tv{background:#0f2238;color:#fff}
 .lich{background:rgba(255,255,255,.08);border-radius:12px;padding:10px 12px}
 .lich div{display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.12);padding:5px 0}
 @media (max-width:800px){.tvwrap{grid-template-columns:1fr;height:auto}}
+/* thẻ chọn, hộp thoại, hướng dẫn nhanh */
+.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.tab{background:#fff;color:var(--xanh);border:1px solid var(--vien);border-radius:999px;padding:7px 14px}
+.tab.on{background:var(--xanh);color:#fff;border-color:var(--xanh)}
+.buoc{counter-reset:b;list-style:none;padding:0;margin:0;display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.buoc li{counter-increment:b;background:var(--xanh-nhat);border-radius:10px;padding:10px 12px 10px 46px;position:relative;font-size:15px}
+.buoc li::before{content:counter(b);position:absolute;left:10px;top:10px;width:26px;height:26px;border-radius:50%;background:var(--xanh);color:#fff;font-weight:700;display:grid;place-items:center}
+.hop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.hop>div{background:#fff;border-radius:12px;max-width:min(96vw,900px);max-height:92vh;overflow:auto;padding:12px}
+.hop img{max-width:100%;display:block}
+td .nho{padding:4px 9px;font-size:13px;border-radius:7px}
+.vtluoi{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:6px;margin-top:8px}
+.vto{border:1px solid var(--vien);border-radius:8px;padding:5px;display:flex;align-items:center;gap:6px;background:#fff;min-width:0}
+.vto.can{border-color:#e0b000;background:#fff8e1}.vto.d{border-color:#9bd3ae;background:#effaf2}.vto.s{border-color:#f0a9a0;background:#fdf0ee}
+.vto canvas{width:60px;height:38px;border-radius:4px;background:#f6f6f6;flex:0 0 auto}
+.vto b{min-width:22px}
+.vto .chon{display:flex;gap:2px}.vto .chon button{padding:5px 9px;min-width:30px;font-size:13px;border-radius:6px;background:#fff;color:var(--chu);border:1px solid var(--vien)}
+.vto .chon button.on{background:var(--xanh);color:#fff;border-color:var(--xanh)}

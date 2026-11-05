@@ -8,84 +8,101 @@
 </head>
 <body>
 <header class="top">
-  <div><h1>Quét chấm bài</h1><div class="sub" id="sub">Chấm phiếu trắc nghiệm bằng camera điện thoại</div></div>
-  <nav><a href="index.html">Trang chủ</a><a href="huong-dan.html">Hướng dẫn</a></nav>
+  <div><h1>Quét chấm bài</h1><div class="sub" id="sub">Chấm phiếu bằng camera điện thoại</div></div>
+  <nav><a href="index.html">Trang chủ</a><a href="kithi.html">Bài kiểm tra</a></nav>
 </header>
 <main>
   <section class="card" id="caiDat">
-    <h2>1. Chọn kì thi</h2>
+    <h2>Chọn bài kiểm tra</h2>
     <div class="row">
-      <div><label>Mã PIN giáo viên</label><input id="pin" type="password" inputmode="numeric" placeholder="PIN do quản trị cấp"></div>
-      <div><label>Kì thi</label><select id="kiThi"><option value="">– Đang tải –</option></select></div>
-      <div><label>Lớp</label><input id="lop" placeholder="Ví dụ 12A1"></div>
+      <div style="flex:2 1 240px"><label>Bài kiểm tra</label><select id="kiThi"><option value="">– Đang tải –</option></select></div>
+      <div><label>Lớp đang chấm</label><input id="lop" placeholder="VD: 12A1" list="dsLop"><datalist id="dsLop"></datalist></div>
     </div>
     <p class="muted" id="phienInfo"></p>
-    <button id="batDau">Bắt đầu quét</button>
-    <label style="display:inline-block;margin-left:10px" class="btn phu">Chọn ảnh phiếu<input id="fileAnh" type="file" accept="image/*" multiple hidden></label>
+    <div class="muted" id="goiY" style="margin:6px 0 10px"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button id="batDau">📷 Bắt đầu quét</button>
+      <label class="btn phu">🖼 Chọn ảnh phiếu<input id="fileAnh" type="file" accept="image/*" multiple hidden></label>
+      <button class="phu" id="nhapTay">⌨ Nhập tay (không ảnh)</button>
+    </div>
+    <p class="muted" style="margin-bottom:0">Chưa có bài kiểm tra? Tạo ở trang <a href="kithi.html">Bài kiểm tra của tôi</a>.</p>
   </section>
 
   <section id="khuQuet" hidden>
     <div class="cam" id="cam"><video id="video" playsinline muted></video><div class="khung"></div><div class="hint" id="hint">Đưa phiếu vào khung, giữ yên…</div></div>
     <div class="row" style="margin-top:8px">
       <button class="phu" id="dungLai">Dừng camera</button>
-      <label class="muted" style="flex:2;align-self:center"><input type="checkbox" id="tuLuu" checked style="width:auto"> Tự lưu khi đọc được đầy đủ (không lỗi)</label>
+      <label class="muted" style="flex:2;align-self:center" id="oTuLuu"><input type="checkbox" id="tuLuu" checked style="width:auto"> Tự lưu khi đọc chắc chắn, không có lỗi</label>
     </div>
   </section>
 
   <section class="card ketqua" id="ketQua" hidden>
     <div class="row">
-      <div style="flex:1 1 260px"><canvas id="anhKQ" style="width:100%;border-radius:8px;border:1px solid var(--vien)"></canvas></div>
-      <div style="flex:1 1 260px">
+      <div style="flex:1 1 300px" id="oAnh"><canvas id="anhKQ" style="width:100%;border-radius:8px;border:1px solid var(--vien)"></canvas></div>
+      <div style="flex:1 1 300px">
         <div class="muted">Điểm trắc nghiệm</div><div class="diem" id="diem">–</div>
         <div class="row" style="margin-top:8px">
-          <div><label>Số báo danh</label><input id="sbd"></div>
-          <div><label>Mã đề</label><input id="made"></div>
+          <div><label>SBD / STT</label><input id="sbd" inputmode="numeric"></div>
+          <div><label>Mã đề</label><input id="made" list="dsMade"><datalist id="dsMade"></datalist></div>
         </div>
+        <div id="oTen"><label>Họ tên học sinh (không bắt buộc)</label><input id="hoTenHS"></div>
         <div id="co"></div>
         <div class="luoi" id="luoi"></div>
         <div class="row" style="margin-top:12px">
-          <button class="luc" id="luu">Lưu kết quả</button>
-          <button class="phu" id="boQua">Quét phiếu khác</button>
+          <button class="luc" id="luu">💾 Lưu kết quả</button>
+          <button class="phu" id="boQua">Bỏ qua / phiếu khác</button>
         </div>
       </div>
     </div>
+    <details id="oSua" style="margin-top:10px"><summary class="muted" style="cursor:pointer">Sửa đáp án học sinh (bấm vào chữ để đổi)</summary><div id="suaP1" class="vtluoi"></div><div id="suaP2" class="vtluoi"></div></details>
   </section>
 
   <section class="card">
     <h2>Đã chấm trong phiên này: <span id="dem">0</span></h2>
-    <table><thead><tr><th>#</th><th>SBD</th><th>Mã đề</th><th>Điểm</th><th>Ghi chú</th></tr></thead><tbody id="ds"></tbody></table>
+    <div style="overflow:auto"><table><thead><tr><th>#</th><th>SBD/STT</th><th>Mã đề</th><th>Điểm</th><th>Ghi chú</th></tr></thead><tbody id="ds"></tbody></table></div>
   </section>
 </main>
 <script src="assets/config.js"></script>
 <script src="assets/app.js"></script>
 <script src="assets/omr.js"></script>
+<script src="assets/vt.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
-const qs = new URLSearchParams(location.search);
-const phien = qs.get("phien") || "";
-let KT = null, LAYOUT = null, stream = null, loopOn = false, last = null, current = null, saved = [];
-$("pin").value = CT.LS.get("pin", "");
+const qs = new URLSearchParams(location.search), phien = qs.get("phien") || "";
+let KT = null, LAYOUT = null, DSKT = [], stream = null, loopOn = false, last = null, cur = null, saved = [], stt = 0;
 if (qs.get("lop")) $("lop").value = qs.get("lop");
-if (phien) $("phienInfo").innerHTML = `📺 Đã kết nối màn hình lớp <b>${CT.esc(qs.get("lop") || "")}</b> – kết quả sẽ hiện lên tivi.`;
+if (phien) $("phienInfo").innerHTML = `📺 Đã kết nối màn hình lớp <b>${CT.esc(qs.get("lop") || "")}</b>: bài chấm xong sẽ hiện lên tivi.`;
 
 async function taiKiThi() {
-  if (!CT.ready()) { $("kiThi").innerHTML = "<option>Chưa cấu hình API_URL (xem Hướng dẫn)</option>"; return; }
   try {
-    const ds = await CT.get({ api: "dsKiThi" });
-    $("kiThi").innerHTML = ds.map((k) => `<option value="${CT.esc(k.id)}">${CT.esc(k.ten)} – khối ${CT.esc(k.khoi)} (phiếu ${CT.esc(k.mau)})</option>`).join("");
+    DSKT = await CT.post({ action: "dsKiThi" });
+    if (!DSKT.length) { $("kiThi").innerHTML = "<option value=''>Chưa có bài kiểm tra – tạo ở trang Bài kiểm tra</option>"; return; }
+    $("kiThi").innerHTML = DSKT.map((k) => `<option value="${CT.esc(k.id)}">${CT.esc(k.ten)} (${k.mau === "VT" ? "viết chữ " + k.soCau + " câu" : "phiếu tô " + k.mau})</option>`).join("");
     const want = qs.get("kithi") || CT.LS.get("kithi", "");
-    if (want) $("kiThi").value = want;
+    if (want && DSKT.some((k) => k.id === want)) $("kiThi").value = want;
+    goiY();
   } catch (e) { CT.toast(e.message, "loi"); }
 }
-taiKiThi();
+function goiY() {
+  const k = DSKT.find((x) => x.id === $("kiThi").value); if (!k) return;
+  $("dsLop").innerHTML = String(k.lop || "").split(/[,;]/).map((s) => s.trim()).filter(Boolean).map((s) => `<option value="${CT.esc(s)}">`).join("");
+  $("goiY").innerHTML = k.mau === "VT"
+    ? "📄 <b>Phiếu viết chữ:</b> chụp <b>từng phiếu</b> (nửa tờ A4), thấy đủ 4 ô vuông đen ở góc. Máy đoán chữ; ô <span class='tag canh'>vàng</span> là chữ chưa chắc, Thầy/Cô bấm chữ đúng rồi lưu."
+    : "📄 <b>Phiếu tô:</b> đặt phiếu trên mặt phẳng, đủ sáng, thấy đủ 4 ô vuông đen ở góc. Máy tự đọc SBD, mã đề và đáp án.";
+}
+$("kiThi").onchange = goiY;
 
 async function chuanBi() {
-  const pin = $("pin").value.trim(), id = $("kiThi").value;
-  if (!pin || !id) throw new Error("Nhập PIN và chọn kì thi");
-  CT.LS.set("pin", pin); CT.LS.set("kithi", id);
-  KT = await CT.post({ action: "layKiThi", pin, id });
-  LAYOUT = (await CT.loadLayouts())[KT.mau];
-  $("sub").textContent = `${KT.ten} – khối ${KT.khoi} – phiếu ${KT.mau}`;
+  const id = $("kiThi").value;
+  if (!id) throw new Error("Chọn bài kiểm tra");
+  if (!$("lop").value.trim()) throw new Error("Nhập lớp đang chấm");
+  CT.LS.set("kithi", id);
+  KT = await CT.post({ action: "layKiThi", id });
+  KT.n = KT.mau === "VT" ? KT.soCau : KT.mau === "24-4" ? 24 : 12;
+  KT.n2 = KT.mau === "VT" ? 0 : 16;
+  LAYOUT = KT.mau === "VT" ? VT.layout(KT.soCau) : (await CT.loadLayouts())[KT.mau];
+  $("dsMade").innerHTML = Object.keys(KT.dapAn).map((m) => `<option value="${CT.esc(m)}">`).join("");
+  $("sub").textContent = `${KT.ten} · lớp ${$("lop").value.trim()}`;
 }
 
 $("batDau").onclick = async () => {
@@ -93,33 +110,47 @@ $("batDau").onclick = async () => {
     await chuanBi();
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
     $("video").srcObject = stream; await $("video").play();
-    $("khuQuet").hidden = false; $("caiDat").hidden = true;
-    loopOn = true; quetLoop();
-  } catch (e) { CT.toast(e.message || "Không mở được camera", "loi"); }
+    $("khuQuet").hidden = false; $("caiDat").hidden = true; loopOn = true; quetLoop();
+  } catch (e) { CT.toast(e.message || "Không mở được camera – kiểm tra quyền camera của trình duyệt", "loi"); }
 };
-$("dungLai").onclick = () => { loopOn = false; if (stream) stream.getTracks().forEach((t) => t.stop()); $("khuQuet").hidden = true; $("caiDat").hidden = false; };
+function dungCam() { loopOn = false; if (stream) stream.getTracks().forEach((t) => t.stop()); stream = null; $("khuQuet").hidden = true; $("caiDat").hidden = false; }
+$("dungLai").onclick = dungCam;
+
+$("nhapTay").onclick = async () => {
+  try { await chuanBi(); } catch (e) { return CT.toast(e.message, "loi"); }
+  const made = Object.keys(KT.dapAn)[0];
+  hienKetQua({ kind: "tay", p1: Array(KT.n).fill(""), p2: Array(KT.n2).fill(""), sbd: "", made: Object.keys(KT.dapAn).length === 1 ? made : "", flags: [] }, null);
+  $("oSua").open = true;
+};
 
 $("fileAnh").onchange = async (ev) => {
-  try { await chuanBi(); } catch (e) { CT.toast(e.message, "loi"); return; }
+  try { await chuanBi(); } catch (e) { return CT.toast(e.message, "loi"); }
   for (const f of ev.target.files) {
     const img = await createImageBitmap(f);
     const c = document.createElement("canvas"); c.width = img.width; c.height = img.height; c.getContext("2d").drawImage(img, 0, 0);
-    const r = docAnh(c);
+    const r = docAnh(c, 1800);
     if (!r.ok) { CT.toast(`${f.name}: ${r.error}`, "loi"); continue; }
     hienKetQua(r, c);
-    if ($("tuLuu").checked && !r.flags.length) await luu(); else await new Promise((res) => { $("luu").dataset.wait = "1"; window._res = res; });
+    if (tuLuuDuoc()) await luu(); else await new Promise((res) => (window._res = res));
   }
+  ev.target.value = "";
 };
 
-/* Đọc một khung hình (canvas) */
+/* Đọc một khung hình */
 function docAnh(canvas, maxSide) {
-  const ctx = canvas.getContext("2d");
-  const k = Math.min(1, (maxSide || 1600) / Math.max(canvas.width, canvas.height));
+  const k = Math.min(1, maxSide / Math.max(canvas.width, canvas.height));
   const w = Math.round(canvas.width * k), h = Math.round(canvas.height * k);
   const c2 = document.createElement("canvas"); c2.width = w; c2.height = h;
   c2.getContext("2d").drawImage(canvas, 0, 0, w, h);
   const g = OMR.toGray(c2.getContext("2d").getImageData(0, 0, w, h).data, w, h);
-  const r = OMR.read(g, w, h, LAYOUT);
+  let r;
+  if (KT.mau === "VT") {
+    r = VT.read(g, w, h, KT.soCau);
+    if (r.ok) Object.assign(r, { kind: "vt", p1: r.chon.map((c) => (c === "?" ? "" : c)), p2: [], sbd: "", made: "", flags: [] });
+  } else {
+    r = OMR.read(g, w, h, LAYOUT);
+    if (r.ok) Object.assign(r, { kind: "to", p2: r.p2.flat() });
+  }
   r.scale = 1 / k;
   return r;
 }
@@ -132,55 +163,103 @@ async function quetLoop() {
     work.width = v.videoWidth; work.height = v.videoHeight;
     work.getContext("2d").drawImage(v, 0, 0);
     const r = docAnh(work, 900);
-    const sig = r.ok ? r.sbd + "|" + r.made + "|" + r.p1.join("") + "|" + r.p2.flat().join("") : "";
+    let sig = "";
+    if (r.ok) sig = r.kind === "vt" ? r.p1.join("") : r.sbd + "|" + r.made + "|" + r.p1.join("") + "|" + r.p2.join("");
     $("cam").classList.toggle("thay", r.ok);
     $("hint").textContent = r.ok ? "Đã thấy phiếu – giữ yên…" : "Đưa phiếu vào khung, đủ 4 ô vuông đen ở góc";
     if (r.ok && sig === last) {
       const full = docAnh(work, 1800);
-      if (full.ok) { navigator.vibrate && navigator.vibrate(120); hienKetQua(full, work);
-        if ($("tuLuu").checked && !full.flags.length && !trung(full.sbd)) luu(); }
+      if (full.ok) { navigator.vibrate && navigator.vibrate(120); hienKetQua(full, work); if (tuLuuDuoc()) luu(); }
       last = null;
     } else last = sig;
   }
-  setTimeout(quetLoop, 250);
+  setTimeout(quetLoop, 300);
+}
+function trung(sbd) { return !!sbd && saved.some((s) => s.sbd === sbd); }
+function tuLuuDuoc() {
+  if (!$("tuLuu").checked || !cur) return false;
+  const loi = loiHienTai().concat(cur.flags || []);
+  return !loi.length && (cur.kind === "to" || (cur.kind === "vt" && !cur.canXem.length && Object.keys(KT.dapAn).length === 1));
 }
 
-function trung(sbd) { return saved.some((s) => s.sbd === sbd); }
+/* Chấm theo đáp án: Phần I (ABCD) và Phần II (Đ/S từng ý) */
+function cham(p1, p2, key) {
+  const r1 = key.p1.map((k, i) => ({ cau: i + 1, chon: p1[i] || "", dung: k, ok: p1[i] === k }));
+  const r2 = (key.p2 || []).map((k, i) => ({ cau: Math.floor(i / 4) + 1, y: "abcd"[i % 4], chon: p2[i] || "", dung: k, ok: p2[i] === k }));
+  const diem = r1.filter((x) => x.ok).length * KT.diemP1 + r2.filter((x) => x.ok).length * KT.diemP2;
+  return { diem: Math.round(diem * 100) / 100, p1: r1, p2: r2 };
+}
+function loiHienTai() {
+  const l = [], made = $("made").value.trim(), sbd = $("sbd").value.trim();
+  if (made.includes("?")) l.push("Mã đề đọc chưa đủ – chọn mã đề đúng"); else if (!KT.dapAn[made]) l.push(made ? `Không có đáp án cho mã đề ${made}` : "Chưa có mã đề");
+  if (!sbd) l.push("Chưa có SBD/STT"); else if (sbd.includes("?")) l.push("SBD đọc chưa đủ – sửa các dấu ? cho đúng"); else if (trung(sbd)) l.push(`SBD/STT ${sbd} đã chấm trong phiên này`);
+  return l;
+}
 
 function hienKetQua(r, src) {
-  const key = KT.dapAn[r.made];
-  const g = key ? OMR.grade(r, key, { p1: KT.diemP1, p2: KT.diemP2 }) : null;
-  current = { r, g, src };
-  // Ảnh kết quả: phiếu đã nắn thẳng; ô đúng (xanh), sai (đỏ), đáp án đúng (khung xanh dương)
-  const c = $("anhKQ"), sctx = src.getContext("2d"), sd = sctx.getImageData(0, 0, src.width, src.height).data;
-  const wp = OMR.warp(sd, src.width, src.height, r.H, r.scale, 900);
-  c.width = wp.w; c.height = wp.h;
-  const ctx = c.getContext("2d"); ctx.putImageData(new ImageData(wp.data, wp.w, wp.h), 0, 0);
-  const rad = LAYOUT.r * wp.w * 1.25;
-  const P = (uv) => [uv[0] * (wp.w - 1), uv[1] * (wp.h - 1)];
-  const circ = (uv, col, wdt) => { const [x, y] = P(uv); ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.lineWidth = wdt; ctx.strokeStyle = col; ctx.stroke(); };
-  if (g) {
-    LAYOUT.p1.forEach((q, i) => {
-      const ch = "ABCD".indexOf(r.p1[i]), dg = "ABCD".indexOf(key.p1[i]);
-      if (ch >= 0) circ(q[ch], ch === dg ? "#1e8449" : "#c0392b", 4);
-      if (ch !== dg && dg >= 0) circ(q[dg], "#2471a3", 2.5);
-    });
-    LAYOUT.p2.forEach((cau, ci) => cau.forEach((row, ri) => {
-      const ch = r.p2[ci][ri] === "Đ" ? 0 : r.p2[ci][ri] === "S" ? 1 : -1, dg = key.p2[ci * 4 + ri] === "Đ" ? 0 : 1;
-      if (ch >= 0) circ(row[ch], ch === dg ? "#1e8449" : "#c0392b", 4);
-      if (ch !== dg) circ(row[dg], "#2471a3", 2.5);
-    }));
+  cur = Object.assign(r, { src, canXem: r.canXem || [] });
+  const vt = r.kind === "vt";
+  if (vt) {
+    // phiếu viết tay: STT tự tăng, chỉ có 1 mã đề thì tự điền
+    r.sbd = String(stt + 1);
+    const ms = Object.keys(KT.dapAn); r.made = ms.length === 1 ? ms[0] : (CT.LS.get("madeVT", "") in KT.dapAn ? CT.LS.get("madeVT", "") : "");
   }
-  $("sbd").value = r.sbd; $("made").value = r.made;
+  $("sbd").value = r.sbd || ""; $("made").value = r.made || ""; $("hoTenHS").value = "";
+  $("oAnh").hidden = !src; $("oTen").hidden = r.kind === "to";
+  if (src) {
+    const sd = src.getContext("2d").getImageData(0, 0, src.width, src.height).data;
+    const wp = vt ? VT.warp(sd, src.width, src.height, r.H, r.scale, 900, LAYOUT) : OMR.warp(sd, src.width, src.height, r.H, r.scale, 900);
+    const c = $("anhKQ"); c.width = wp.w; c.height = wp.h; c.getContext("2d").putImageData(new ImageData(wp.data, wp.w, wp.h), 0, 0);
+    cur.anhGoc = document.createElement("canvas"); cur.anhGoc.width = wp.w; cur.anhGoc.height = wp.h; cur.anhGoc.getContext("2d").drawImage(c, 0, 0);
+  }
+  veSua(); capNhat();
+  $("ketQua").hidden = false; $("ketQua").scrollIntoView({ behavior: "smooth" });
+}
+
+/* Lưới sửa đáp án: phiếu viết tay hiện ảnh từng ô */
+function veSua() {
+  const vt = cur.kind === "vt", key = KT.dapAn[$("made").value.trim()];
+  $("oSua").open = vt || cur.kind === "tay";
+  $("suaP1").innerHTML = cur.p1.map((ch, i) => `<div class="vto ${vt && cur.canXem.includes(i + 1) ? "can" : ""}" id="o1_${i}">
+    ${vt ? `<canvas width="60" height="38" id="cv${i}"></canvas>` : ""}<b>${i + 1}.</b><span class="chon">${"ABCD".split("").map((L) => `<button data-c="${i}" data-v="${L}" class="${ch === L ? "on" : ""}">${L}</button>`).join("")}</span></div>`).join("");
+  $("suaP2").innerHTML = cur.p2.map((ch, i) => `<div class="vto" id="o2_${i}"><b>${Math.floor(i / 4) + 1}${"abcd"[i % 4]}</b><span class="chon">${["Đ", "S"].map((L) => `<button data-c2="${i}" data-v="${L}" class="${ch === L ? "on" : ""}">${L}</button>`).join("")}</span></div>`).join("");
+  if (vt && cur.anhGoc) {
+    const s = cur.anhGoc.width / LAYOUT.FW;
+    LAYOUT.boxes.forEach((b, i) => { const cv = $("cv" + i); if (cv) cv.getContext("2d").drawImage(cur.anhGoc, (b.x - 0.6) * s, (b.y - 0.6) * s, (b.w + 1.2) * s, (b.h + 1.2) * s, 0, 0, 60, 38); });
+  }
+  document.querySelectorAll("[data-c]").forEach((b) => (b.onclick = () => { const i = +b.dataset.c; cur.p1[i] = cur.p1[i] === b.dataset.v ? "" : b.dataset.v; cur.canXem = cur.canXem.filter((x) => x !== i + 1); veO(i); capNhat(); }));
+  document.querySelectorAll("[data-c2]").forEach((b) => (b.onclick = () => { const i = +b.dataset.c2; cur.p2[i] = cur.p2[i] === b.dataset.v ? "" : b.dataset.v; capNhat(); veSua2(i); }));
+}
+function veO(i) { const o = $("o1_" + i); o.classList.remove("can"); o.querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.v === cur.p1[i])); }
+function veSua2(i) { $("o2_" + i).querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.v === cur.p2[i])); }
+
+/* Tính điểm, tô màu ảnh và lưới theo đáp án hiện tại */
+function capNhat() {
+  const key = KT.dapAn[$("made").value.trim()], g = key ? cham(cur.p1, cur.p2, key) : null;
+  cur.g = g;
   $("diem").textContent = g ? CT.fmt(g.diem) : "?";
-  const co = r.flags.slice();
-  if (!key) co.unshift(`Không có đáp án cho mã đề ${r.made}`);
-  if (trung(r.sbd)) co.unshift(`SBD ${r.sbd} đã được chấm trong phiên này`);
+  const co = loiHienTai().concat(cur.flags || []);
+  if (cur.kind === "vt" && cur.canXem.length) co.push(`Chữ chưa chắc ở câu ${cur.canXem.join(", ")} – kiểm tra ô vàng`);
+  if (cur.kind === "vt" && cur.trong && cur.trong.length) co.push(`Bỏ trống câu ${cur.trong.join(", ")}`);
   $("co").innerHTML = co.map((f) => `<div class="tag canh" style="margin:3px 0">${CT.esc(f)}</div>`).join("");
   $("luoi").innerHTML = g ? g.p1.map((x) => `<div class="o ${x.chon ? (x.ok ? "d" : "s") : "t"}">${x.cau}: ${x.chon || "–"}</div>`).join("") +
     g.p2.map((x) => `<div class="o ${x.chon ? (x.ok ? "d" : "s") : "t"}">${x.cau}${x.y}: ${x.chon || "–"}</div>`).join("") : "";
-  $("ketQua").hidden = false; $("ketQua").scrollIntoView({ behavior: "smooth" });
+  if (g) g.p1.forEach((x, i) => { const o = $("o1_" + i); if (o && !o.classList.contains("can")) { o.classList.toggle("d", !!x.chon && x.ok); o.classList.toggle("s", !x.ok); } });
+  // khoanh đúng/sai lên ảnh phiếu tô
+  if (cur.kind === "to" && cur.anhGoc) {
+    const c = $("anhKQ"), ctx = c.getContext("2d"); ctx.drawImage(cur.anhGoc, 0, 0);
+    if (g) {
+      const rad = LAYOUT.r * c.width * 1.25, P = (uv) => [uv[0] * (c.width - 1), uv[1] * (c.height - 1)];
+      const circ = (uv, col, wd) => { const [x, y] = P(uv); ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.lineWidth = wd; ctx.strokeStyle = col; ctx.stroke(); };
+      LAYOUT.p1.forEach((q, i) => { const ch = "ABCD".indexOf(cur.p1[i]), dg = "ABCD".indexOf(key.p1[i]);
+        if (ch >= 0) circ(q[ch], ch === dg ? "#1e8449" : "#c0392b", 4); if (ch !== dg && dg >= 0) circ(q[dg], "#2471a3", 2.5); });
+      LAYOUT.p2.forEach((cau, ci) => cau.forEach((row, ri) => { const i = ci * 4 + ri, ch = cur.p2[i] === "Đ" ? 0 : cur.p2[i] === "S" ? 1 : -1, dg = key.p2[i] === "Đ" ? 0 : 1;
+        if (ch >= 0) circ(row[ch], ch === dg ? "#1e8449" : "#c0392b", 4); if (ch !== dg) circ(row[dg], "#2471a3", 2.5); }));
+    }
+  }
 }
+$("made").oninput = () => { if (cur) capNhat(); };
+$("sbd").oninput = () => { if (cur) capNhat(); };
 
 function jpeg(canvas, maxSide, q) {
   const k = Math.min(1, maxSide / Math.max(canvas.width, canvas.height));
@@ -189,29 +268,31 @@ function jpeg(canvas, maxSide, q) {
 }
 
 async function luu() {
-  if (!current) return;
-  const { r } = current;
-  r.sbd = $("sbd").value.trim(); r.made = $("made").value.trim();
-  const key = KT.dapAn[r.made];
-  if (!key) { CT.toast("Mã đề không có trong đáp án", "loi"); return; }
-  const g = OMR.grade(r, key, { p1: KT.diemP1, p2: KT.diemP2 });
+  if (!cur) return;
+  const sbd = $("sbd").value.trim(), made = $("made").value.trim(), key = KT.dapAn[made];
+  if (!key) return CT.toast("Mã đề không có trong đáp án", "loi");
+  if (!sbd || sbd.includes("?")) return CT.toast("Nhập đúng SBD hoặc STT của học sinh", "loi");
+  const g = cham(cur.p1, cur.p2, key);
   const sai = g.p1.filter((x) => !x.ok).map((x) => x.cau).concat(g.p2.filter((x) => !x.ok).map((x) => x.cau + x.y));
+  const co = (cur.flags || []).slice(); if (cur.kind === "vt" && cur.canXem.length) co.push("đã kiểm tra chữ viết");
   $("luu").disabled = true;
   try {
-    await CT.post({ action: "luuKetQua", pin: CT.LS.get("pin", ""), kiThiId: KT.id, lop: $("lop").value.trim(), phien,
-      sbd: r.sbd, made: r.made, p1: r.p1, p2: r.p2.flat(), diem: g.diem, co: r.flags, sai,
-      anh: jpeg($("anhKQ"), 1280, 0.72), anhNho: jpeg($("anhKQ"), 640, 0.6) });
-    saved.push({ sbd: r.sbd, made: r.made, diem: g.diem, co: r.flags.length });
+    await CT.post({ action: "luuKetQua", kiThiId: KT.id, lop: $("lop").value.trim(), phien, sbd, made, hoTenHS: $("hoTenHS").value.trim(),
+      p1: cur.p1, p2: cur.p2, diem: g.diem, co, sai, cach: cur.kind,
+      anh: cur.src ? jpeg($("anhKQ"), 1280, 0.72) : "", anhNho: cur.src ? jpeg($("anhKQ"), 640, 0.6) : "" });
+    if (cur.kind === "vt") { stt = Number(sbd) || stt + 1; CT.LS.set("madeVT", made); }
+    saved.push({ sbd, made, diem: g.diem, co: co.length });
     $("dem").textContent = saved.length;
-    $("ds").innerHTML = saved.map((s, i) => `<tr><td>${i + 1}</td><td>${CT.esc(s.sbd)}</td><td>${CT.esc(s.made)}</td><td><b>${CT.fmt(s.diem)}</b></td><td>${s.co ? '<span class="tag canh">cần xem lại</span>' : '<span class="tag ok">ổn</span>'}</td></tr>`).reverse().join("");
-    CT.toast(`Đã lưu SBD ${r.sbd}: ${CT.fmt(g.diem)} điểm`, "ok");
-    $("ketQua").hidden = true; current = null;
-    if (window._res) { const f = window._res; window._res = null; f(); }
+    $("ds").innerHTML = saved.map((s, i) => `<tr><td>${i + 1}</td><td>${CT.esc(s.sbd)}</td><td>${CT.esc(s.made)}</td><td><b>${CT.fmt(s.diem)}</b></td><td>${s.co ? '<span class="tag canh">đã xem lại</span>' : '<span class="tag ok">ổn</span>'}</td></tr>`).reverse().join("");
+    CT.toast(`Đã lưu ${sbd}: ${CT.fmt(g.diem)} điểm`, "ok");
+    dong();
   } catch (e) { CT.toast(e.message, "loi"); }
   $("luu").disabled = false;
 }
+function dong() { $("ketQua").hidden = true; cur = null; if (window._res) { const f = window._res; window._res = null; f(); } if (stream) $("khuQuet").scrollIntoView({ behavior: "smooth" }); }
 $("luu").onclick = luu;
-$("boQua").onclick = () => { $("ketQua").hidden = true; current = null; if (window._res) { const f = window._res; window._res = null; f(); } };
+$("boQua").onclick = dong;
+if (CT.canDangNhap()) taiKiThi();
 </script>
 </body>
 </html>

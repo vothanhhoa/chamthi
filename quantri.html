@@ -5,115 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quản trị chấm thi</title>
 <link rel="stylesheet" href="assets/style.css">
-<script src="assets/vendor/xlsx.full.min.js"></script>
 </head>
 <body>
 <header class="top">
-  <div><h1>Quản trị chấm thi</h1><div class="sub">Tạo kì thi, nhập đáp án, xem và xuất bảng điểm</div></div>
-  <nav><a href="index.html">Trang chủ</a><a href="huong-dan.html">Hướng dẫn</a></nav>
+  <div><h1>Quản trị</h1><div class="sub">Tài khoản giáo viên · chỉ tài khoản quản trị mới vào được</div></div>
+  <nav><a href="index.html">Trang chủ</a><a href="kithi.html">Bài kiểm tra</a></nav>
 </header>
 <main>
   <section class="card">
-    <h2>Mã PIN</h2>
-    <div class="row"><div><input id="pin" type="password" placeholder="PIN quản trị (tạo kì thi) hoặc PIN giáo viên (xem điểm)"></div>
-      <div style="flex:0 0 auto"><button id="kiemPin">Xác nhận</button></div></div>
+    <h2>Tổng quan</h2>
+    <div id="tongQuan" class="muted">Đang tải…</div>
+    <p style="margin-bottom:0"><a class="btn phu" href="kithi.html">Xem bài kiểm tra và điểm của mọi giáo viên</a> <span class="muted">(ở trang Bài kiểm tra, tích ô "xem của tất cả giáo viên")</span></p>
   </section>
-
   <section class="card">
-    <h2>1. Tạo hoặc sửa kì thi</h2>
-    <div class="row">
-      <div><label>Tên kì thi</label><input id="ten" placeholder="Giữa kì I – Công nghệ 12"></div>
-      <div><label>Môn</label><input id="mon" value="Công nghệ"></div>
-      <div><label>Khối</label><input id="khoi" placeholder="12"></div>
-      <div><label>Mẫu phiếu</label><select id="mau"><option value="24-4">24-4 (24 câu + 4 câu Đ/S)</option><option value="12-4">12-4 (12 câu + 4 câu Đ/S, có tự luận)</option></select></div>
-    </div>
-    <div class="row">
-      <div><label>Điểm mỗi câu Phần I</label><input id="d1" value="0,25"></div>
-      <div><label>Điểm mỗi ý Phần II</label><input id="d2" value="0,25"></div>
-      <div><label>Có tự luận?</label><select id="coTL"><option value="0">Không</option><option value="1">Có</option></select></div>
-      <div><label>Điểm tối đa tự luận</label><input id="dTL" value="0"></div>
-    </div>
-    <label>Đáp án – dán nguyên bảng từ sheet <b>Dap_an</b> của file Excel (có thể kèm dòng tiêu đề)</label>
-    <textarea id="dapAn" placeholder="Mã đề	Câu 1	Câu 2 …	II.1a	II.1b …&#10;201	C	D	B …	S	Đ …"></textarea>
-    <p class="muted" id="xemTruoc"></p>
-    <input type="hidden" id="kiThiId">
-    <button id="luuKT">Lưu kì thi</button>
-  </section>
-
-  <section class="card">
-    <h2>2. Bảng điểm</h2>
-    <div class="row">
-      <div><label>Kì thi</label><select id="chonKT"></select></div>
-      <div><label>Lớp (để trống = tất cả)</label><input id="locLop"></div>
-      <div style="flex:0 0 auto;align-self:end"><button id="taiKQ">Xem</button> <button class="phu" id="xuat">Xuất Excel</button></div>
-    </div>
-    <div style="overflow:auto;margin-top:10px"><table><thead><tr><th>Lớp</th><th>SBD</th><th>Mã đề</th><th>Trắc nghiệm</th><th>Tự luận</th><th>Tổng</th><th>Ghi chú</th><th>Ảnh</th></tr></thead><tbody id="bang"></tbody></table></div>
+    <h2>Tài khoản giáo viên</h2>
+    <div class="row"><div><input id="loc" placeholder="Tìm theo tên, trường, tên đăng nhập…"></div></div>
+    <div style="overflow:auto;margin-top:8px"><table><thead><tr><th>Họ tên</th><th>Tên đăng nhập</th><th>Trường</th><th>Môn</th><th>Bài KT</th><th>Bài đã chấm</th><th>Đăng nhập gần nhất</th><th>Trạng thái</th><th></th></tr></thead><tbody id="bang"></tbody></table></div>
+    <p class="muted">Muốn cấp quyền quản trị cho người khác: mở Google Sheet ChamThi → trang tính <b>TaiKhoan</b> → sửa cột <b>VaiTro</b> thành <code>admin</code>.</p>
   </section>
 </main>
 <script src="assets/config.js"></script>
 <script src="assets/app.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
-const num = (s) => Number(String(s).replace(",", "."));
-$("pin").value = CT.LS.get("pin", "");
-let DS = [], KQ = [];
-$("kiemPin").onclick = async () => {
-  try { await CT.post({ action: "kiemPin", pin: $("pin").value.trim() }); CT.LS.set("pin", $("pin").value.trim()); CT.toast("PIN hợp lệ", "ok"); taiDS(); }
-  catch (e) { CT.toast(e.message, "loi"); }
-};
-function parseDapAn(txt, mau) {
-  const n = mau === "24-4" ? 24 : 12, out = {};
-  txt.split(/\r?\n/).forEach((line) => {
-    const c = line.split(/\t|;|,/).map((s) => s.trim()).filter((s) => s !== "");
-    if (!/^\d{1,4}$/.test(c[0] || "")) return;
-    const p1 = c.slice(1, 1 + n).map((s) => s.toUpperCase());
-    const p2 = c.slice(1 + n, 1 + n + 16).map((s) => (/^(Đ|D|DUNG|ĐÚNG|T|TRUE)$/i.test(s) ? "Đ" : "S"));
-    if (p1.length === n && p1.every((s) => "ABCD".includes(s)) && p2.length === 16) out[c[0]] = { p1, p2 };
-  });
-  return out;
+let DS = [];
+const ngay = (d) => (d ? new Date(d).toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" }) : "");
+async function tai() {
+  try { DS = await CT.post({ action: "dsTaiKhoan" }); ve(); }
+  catch (e) { $("tongQuan").innerHTML = `<span class="tag loi">${CT.esc(e.message)}</span>`; }
 }
-$("dapAn").oninput = $("mau").onchange = () => {
-  const d = parseDapAn($("dapAn").value, $("mau").value), ks = Object.keys(d);
-  $("xemTruoc").textContent = ks.length ? `Đọc được ${ks.length} mã đề: ${ks.join(", ")}` : "Chưa đọc được mã đề nào – kiểm tra số câu so với mẫu phiếu";
-};
-$("luuKT").onclick = async () => {
-  const dapAn = parseDapAn($("dapAn").value, $("mau").value);
-  if (!Object.keys(dapAn).length) { CT.toast("Chưa có đáp án hợp lệ", "loi"); return; }
-  try {
-    const r = await CT.post({ action: "luuKiThi", pin: $("pin").value.trim(), dapAn, kiThi: { id: $("kiThiId").value || null, ten: $("ten").value, mon: $("mon").value,
-      khoi: $("khoi").value, mau: $("mau").value, diemP1: num($("d1").value), diemP2: num($("d2").value), coTL: $("coTL").value === "1", diemTL: num($("dTL").value) } });
-    $("kiThiId").value = r.id; CT.toast("Đã lưu kì thi " + r.id, "ok"); taiDS();
-  } catch (e) { CT.toast(e.message, "loi"); }
-};
-async function taiDS() {
-  DS = await CT.get({ api: "dsKiThi" });
-  $("chonKT").innerHTML = DS.map((k) => `<option value="${CT.esc(k.id)}">${CT.esc(k.ten)} (${CT.esc(k.mau)})</option>`).join("");
+function ve() {
+  const q = $("loc").value.trim().toLowerCase();
+  const ds = DS.filter((u) => !q || [u.hoTen, u.tenDN, u.truong, u.mon].join(" ").toLowerCase().includes(q));
+  $("tongQuan").innerHTML = `<b>${DS.length}</b> tài khoản · <b>${DS.reduce((a, u) => a + u.soKiThi, 0)}</b> bài kiểm tra · <b>${DS.reduce((a, u) => a + u.soBai, 0)}</b> bài đã chấm · <b>${new Set(DS.map((u) => u.truong).filter(Boolean)).size}</b> trường`;
+  $("bang").innerHTML = ds.map((u) => `<tr><td style="text-align:left">${CT.esc(u.hoTen)} ${u.vaiTro === "admin" ? '<span class="tag ok">QT</span>' : ""}</td><td>${CT.esc(u.tenDN)}</td><td>${CT.esc(u.truong)}</td><td>${CT.esc(u.mon)}</td>
+    <td>${u.soKiThi}</td><td>${u.soBai}</td><td>${ngay(u.lanCuoi)}</td>
+    <td>${u.trangThai === "khoa" ? '<span class="tag loi">Đã khoá</span>' : '<span class="tag ok">Hoạt động</span>'}</td>
+    <td style="white-space:nowrap"><button class="nho phu" data-k="${CT.esc(u.tenDN)}" data-t="${u.trangThai === "khoa" ? "hoatdong" : "khoa"}">${u.trangThai === "khoa" ? "Mở khoá" : "Khoá"}</button>
+    <button class="nho phu" data-mk="${CT.esc(u.tenDN)}">Đặt lại mật khẩu</button></td></tr>`).join("");
+  document.querySelectorAll("[data-k]").forEach((b) => (b.onclick = async () => {
+    try { await CT.post({ action: "capNhatTaiKhoan", tenDN: b.dataset.k, trangThai: b.dataset.t }); CT.toast("Đã cập nhật", "ok"); tai(); } catch (e) { CT.toast(e.message, "loi"); }
+  }));
+  document.querySelectorAll("[data-mk]").forEach((b) => (b.onclick = async () => {
+    if (!confirm(`Đặt lại mật khẩu cho ${b.dataset.mk}?`)) return;
+    try { const o = await CT.post({ action: "datLaiMatKhau", tenDN: b.dataset.mk }); prompt(`Mật khẩu mới của ${b.dataset.mk} (gửi riêng cho giáo viên, nhắc đổi sau khi đăng nhập):`, o.matKhau); }
+    catch (e) { CT.toast(e.message, "loi"); }
+  }));
 }
-$("taiKQ").onclick = async () => {
-  try {
-    KQ = await CT.post({ action: "dsKetQua", pin: $("pin").value.trim(), kiThiId: $("chonKT").value, lop: $("locLop").value.trim() });
-    KQ.sort((a, b) => String(a.lop).localeCompare(b.lop) || String(a.sbd).localeCompare(b.sbd));
-    const k = DS.find((x) => x.id === $("chonKT").value);
-    $("bang").innerHTML = KQ.map((r, i) => `<tr><td>${CT.esc(r.lop)}</td><td>${CT.esc(r.sbd)}</td><td>${CT.esc(r.made)}</td><td>${CT.fmt(r.diemTN)}</td>
-      <td>${k && k.coTL ? `<input style="width:70px" value="${r.diemTL === "" ? "" : CT.fmt(r.diemTL)}" data-i="${i}" class="tl">` : "–"}</td>
-      <td id="tong${i}"><b>${CT.fmt(r.tong)}</b></td><td>${r.co ? `<span class="tag canh">${CT.esc(r.co)}</span>` : ""}</td>
-      <td>${r.anhTN ? `<a target="_blank" href="https://drive.google.com/file/d/${CT.esc(r.anhTN)}/view">xem</a>` : ""}</td></tr>`).join("");
-    document.querySelectorAll("input.tl").forEach((el) => (el.onchange = async () => {
-      const r = KQ[el.dataset.i];
-      try { const o = await CT.post({ action: "luuTL", pin: $("pin").value.trim(), id: r.id, diemTL: num(el.value) });
-        r.diemTL = num(el.value); r.tong = o.tong; $("tong" + el.dataset.i).innerHTML = `<b>${CT.fmt(o.tong)}</b>`; CT.toast("Đã lưu điểm tự luận", "ok"); }
-      catch (e) { CT.toast(e.message, "loi"); }
-    }));
-  } catch (e) { CT.toast(e.message, "loi"); }
-};
-$("xuat").onclick = () => {
-  if (!KQ.length) { CT.toast("Chưa có dữ liệu", "loi"); return; }
-  const rows = [["STT", "Lớp", "Số báo danh", "Mã đề", "Điểm trắc nghiệm", "Điểm tự luận", "Điểm GK (nhập vnEdu)", "Ghi chú"]];
-  KQ.forEach((r, i) => rows.push([i + 1, r.lop, r.sbd, r.made, Number(r.diemTN), r.diemTL === "" ? "" : Number(r.diemTL), Math.round(Number(r.tong) * 10) / 10, r.co || ""]));
-  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "Bang_diem");
-  XLSX.writeFile(wb, `Bang_diem_${$("chonKT").value}${$("locLop").value ? "_" + $("locLop").value : ""}.xlsx`);
-};
-if (CT.ready()) taiDS().catch(() => {});
+$("loc").oninput = ve;
+if (CT.canDangNhap()) tai();
 </script>
 </body>
 </html>
