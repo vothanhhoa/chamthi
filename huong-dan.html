@@ -39,6 +39,30 @@
 </section>
 
 <section class="card">
+<h2 style="margin-top:0">AI. Phiếu tự soạn của giáo viên và chấm tự luận bằng AI</h2>
+<ol>
+  <li><b>Tạo bài:</b> chọn loại phiếu <i>Phiếu tự soạn của giáo viên, mọi môn</i>, nhập số câu ABCD (0 nếu không có), phần Đúng/Sai (có hoặc không), đáp án như các loại phiếu khác.</li>
+  <li><b>Tự luận:</b> chọn <i>Có phần tự luận</i>, nhập điểm tối đa, <b>dán hướng dẫn chấm</b> (các ý, điểm từng ý, đáp án gợi ý) và chọn <b>mức chấm</b>: <i>chi tiết</i> (khó), <i>vừa</i> (phù hợp) hoặc <i>thoáng</i> (khuyến khích). Môn Ngữ văn chỉ có tự luận thì để số câu ABCD = 0 và không có Đúng/Sai.</li>
+  <li><b>Chấm:</b> trên điện thoại bấm <b>📸 Chụp bài làm</b> (mở máy ảnh của điện thoại, ảnh nét nhất). Bài nhiều trang thì bấm <b>＋ Chụp thêm trang</b>, xong bấm <b>🤖 AI chấm bài</b>.</li>
+  <li>AI đọc đáp án học sinh viết, chép lại phần tự luận và <b>gợi ý điểm từng ý kèm lí do</b>, nhận xét gửi học sinh, chỗ cần xem lại. Giáo viên bấm <b>✓ Duyệt điểm AI &amp; lưu</b>, hoặc <b>sửa điểm, sửa nhận xét</b> rồi bấm Lưu. Bảng điểm ghi rõ "GV duyệt điểm AI" hay "GV sửa điểm AI 2,25 → 2,5".</li>
+  <li>Phiếu tô 12-4 có tự luận ở mặt sau: chấm trắc nghiệm như thường, rồi bấm <b>📸 Chụp trang tự luận</b> → <b>🤖 AI gợi ý điểm tự luận</b>.</li>
+  <li><b>AI chỉ gợi ý</b>: điểm cuối cùng luôn do giáo viên quyết định. Chữ khó đọc, bài tẩy xoá nhiều thì nên chấm tay.</li>
+</ol>
+<p class="muted"><b>Chi phí:</b> AI do Anthropic (Claude) cung cấp, tính tiền theo lượng dùng: khoảng <b>1.000 – 2.000 đ/bài</b> với mô hình mặc định Claude Opus 5.5; có thể đổi sang mô hình rẻ hơn (Claude Haiku 5.5, khoảng 20 – 50 đ/bài, đọc chữ kém chính xác hơn) bằng dòng <code>AI_MODEL</code> trong trang tính CaiDat. Trang hiện chi phí ước tính sau mỗi lần chấm.</p>
+<p class="muted"><b>Quản trị cài khoá AI (một lần):</b> tạo khoá API tại console.anthropic.com (nạp tiền trước) → mở Apps Script của Sheet ChamThi → <b>⚙ Cài đặt dự án → Thuộc tính tập lệnh → Thêm thuộc tính</b>: tên <code>ANTHROPIC_API_KEY</code>, giá trị là khoá → Lưu. Không dán khoá vào Sheet, tin nhắn hay mã nguồn.</p>
+</section>
+
+<section class="card">
+<h2 style="margin-top:0">QR. Nối điện thoại bằng mã QR trên laptop – không cần gõ mật khẩu</h2>
+<ol>
+  <li>Trên laptop nối tivi: đăng nhập, mở <b>Màn hình tivi</b> của lớp, chọn bài kiểm tra ở ô dưới mã QR.</li>
+  <li>Dùng camera hoặc Zalo trên điện thoại quét mã QR. Điện thoại báo <i>"chờ giáo viên cho phép"</i>.</li>
+  <li>Trên laptop hiện <b>📱 … muốn chấm bài</b>: bấm <b>✓ Cho phép</b>. Điện thoại vào thẳng màn hình chấm bài đã chọn, camera tự bật (phiếu tô, phiếu viết chữ).</li>
+  <li>Học sinh có quét mã cũng không vào được: giáo viên bấm <b>✕ Từ chối</b>. Mã đổi sau mỗi 15 phút.</li>
+</ol>
+</section>
+
+<section class="card">
 <h2 style="margin-top:0">B. Bảo mật và quyền riêng tư</h2>
 <ul>
   <li>Mỗi giáo viên chỉ xem được <b>bài kiểm tra và điểm của mình</b>. Quản trị xem được tất cả để hỗ trợ.</li>
@@ -46,6 +70,7 @@
   <li>Mật khẩu được mã hoá một chiều, quản trị cũng không xem được. Quên mật khẩu thì nhờ quản trị đặt lại.</li>
   <li>Hạn chế ghi họ tên đầy đủ của học sinh (dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP); dùng SBD hoặc STT là đủ để nhập vnEdu.</li>
   <li><b>Không</b> nhập mật khẩu vnEdu vào trang này hay đưa cho người khác.</li>
+  <li>Khi dùng AI, ảnh bài làm được gửi tới dịch vụ Claude của Anthropic để đọc và chấm; theo điều khoản thương mại của Anthropic, dữ liệu gửi qua API mặc định không dùng để huấn luyện mô hình. Nên che hoặc không ghi họ tên đầy đủ trên bài nếu không cần.</li>
 </ul>
 </section>
 
@@ -56,6 +81,7 @@
   <li><b>Cập nhật trang web:</b> tải tất cả tệp lên kho GitHub <code>vothanhhoa/chamthi</code> (ghi đè). Trang chạy ở <code>https://vothanhhoa.github.io/chamthi/</code>.</li>
   <li><b>Tài khoản quản trị:</b> đăng kí như giáo viên trên trang, rồi mở trang tính <i>TaiKhoan</i>, sửa cột <i>VaiTro</i> của tài khoản đó thành <code>admin</code>. Trang <a href="quantri.html">Quản trị</a>: xem danh sách giáo viên, khoá/mở khoá, đặt lại mật khẩu.</li>
   <li><b>Giới hạn miễn phí:</b> tài khoản Google cá nhân xử lí khoảng 30 yêu cầu cùng lúc – đủ cho vài chục giáo viên chấm cùng buổi. Nếu báo "mất kết nối", trang tự thử lại; giáo viên bấm Lưu lại.</li>
+  <li><b>Bật AI:</b> thêm thuộc tính tập lệnh <code>ANTHROPIC_API_KEY</code> (xem mục AI ở trên). Tuỳ chọn trong CaiDat: <code>AI_MODEL</code> (mặc định claude-opus-5-5), <code>AI_EFFORT</code> (mặc định medium).</li>
   <li>Các dòng <i>PIN_GV, PIN_QUANTRI</i> cũ trong trang tính <i>CaiDat</i> không còn dùng, có thể xoá. <b>Không xoá</b> dòng <i>THU_MUC_ANH</i>.</li>
 </ol>
 </section>

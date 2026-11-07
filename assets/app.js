@@ -58,8 +58,8 @@
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
   /* Đọc đáp án dán vào: bảng TNMaker (mỗi ô một đáp án) hoặc gọn "101 ABCDAB… ĐSĐS…".
      mau: "24-4" | "12-4" | "VT"; n: số câu Phần I (VT: số câu). */
-  function docDapAn(txt, mau, n) {
-    const p2n = mau === "VT" ? 0 : 16, out = {}, loi = [];
+  function docDapAn(txt, mau, n, soY2) {
+    const p2n = soY2 !== undefined ? soY2 : mau === "VT" ? 0 : 16, out = {}, loi = [];
     String(txt || "").split(/\r?\n/).forEach((line, li) => {
       line = line.trim(); if (!line) return;
       const m = line.match(/^([0-9A-Za-z]{1,6})[\s:;,.|\t-]+(.*)$/);
@@ -69,12 +69,12 @@
       if (cells.length < n) cells = rest.replace(/[^ABCDĐSTF]/g, "").split("");   // dạng gọn
       const p1 = cells.slice(0, n), p2 = cells.slice(n, n + p2n).map((s) => (/^(Đ|D|T|TRUE)$/.test(s) ? "Đ" : "S"));
       if (p1.length === n && p1.every((s) => /^[ABCD]$/.test(s)) && p2.length === p2n) out[made] = { p1, p2 };
-      else loi.push(`Dòng ${li + 1} (mã ${made}): cần ${n} đáp án A–D${p2n ? " và 16 ý Đ/S" : ""}, đọc được ${p1.length}${p2n ? " + " + p2.length : ""}`);
+      else loi.push(`Dòng ${li + 1} (mã ${made}): cần ${n} đáp án A–D${p2n ? ` và ${p2n} ý Đ/S` : ""}, đọc được ${p1.length}${p2n ? " + " + p2.length : ""}`);
     });
     return { dapAn: out, loi };
   }
   /* Dải chữ chạy đầu trang + chân trang + thống kê truy cập (mọi trang, trừ màn hình tivi) */
-  const PHIEN_BAN = "07/11 – 4.2";
+  const PHIEN_BAN = "07/11 – 5.0";
   function trangTri() {
     if (document.body.classList.contains("tv") || document.body.dataset.tron === "khong") return;
     const bang = document.createElement("div");

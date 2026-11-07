@@ -27,7 +27,10 @@
   </div>
   <div class="tvside">
     <div class="qr"><div id="qrc"></div><div style="margin-top:8px;font-weight:700">Giáo viên quét mã để chấm bài</div>
-      <div class="muted" id="maPhien"></div></div>
+      <div class="muted" id="maPhien"></div>
+      <div id="oKT" hidden style="margin-top:8px;text-align:left"><label style="color:var(--phu);font-size:13px">Bài kiểm tra chấm trên điện thoại</label><select id="ktTV"></select>
+        <div class="muted" style="font-size:12px;margin-top:4px">Điện thoại quét mã → Thầy/Cô bấm <b>Cho phép</b> ở đây là chấm luôn, không cần đăng nhập.</div></div>
+      <div id="xinNoi"></div></div>
     <div class="lich"><b>Đã chấm: <span id="dem">0</span> bài</b><div id="lich" style="display:block"></div></div>
     <button class="phu" onclick="document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()">Toàn màn hình</button>
   </div>
@@ -43,7 +46,43 @@ $("tieuDe").textContent = lop ? `Lớp ${lop} – chấm bài` : "Màn hình ch�
 $("maPhien").textContent = "Mã phiên: " + phien;
 const base = location.href.replace(/tv\.html.*$/, "");
 const link = `${base}quet.html?phien=${phien}&lop=${encodeURIComponent(lop)}${kithi ? "&kithi=" + encodeURIComponent(kithi) : ""}`;
-new QRCode($("qrc"), { text: link, width: 220, height: 220 });
+let qrObj = new QRCode($("qrc"), { text: link, width: 220, height: 220 }), maQR = "", hetQR = 0;
+function veQR() {
+  const kt = $("ktTV").value || kithi;
+  const l = `${base}quet.html?phien=${phien}&lop=${encodeURIComponent(lop)}${kt ? "&kithi=" + encodeURIComponent(kt) : ""}${maQR ? "&ma=" + maQR : ""}`;
+  qrObj.clear(); qrObj.makeCode(l);
+}
+/* Giáo viên đã đăng nhập trên laptop: mã QR kèm mã nối, điện thoại quét xong chờ giáo viên bấm Cho phép */
+async function taoQR() {
+  if (!CT.daDangNhap() || !CT.ready()) return;
+  try {
+    const o = await CT.post({ action: "qrTao" }); maQR = o.ma; hetQR = o.hetHan - 60000;
+    if (!$("ktTV").options.length) {
+      const ds = await CT.post({ action: "dsKiThi" });
+      $("ktTV").innerHTML = ds.map((k) => `<option value="${CT.esc(k.id)}">${CT.esc(k.ten)}</option>`).join("");
+      const want = kithi || CT.LS.get("kithi", ""); if (want && ds.some((k) => k.id === want)) $("ktTV").value = want;
+      $("oKT").hidden = !ds.length;
+    }
+    veQR();
+  } catch (e) {}
+}
+$("ktTV").onchange = () => { CT.LS.set("kithi", $("ktTV").value); veQR(); };
+async function xemXin() {
+  if (!maQR) return;
+  if (Date.now() > hetQR) { await taoQR(); return; }
+  try {
+    const o = await CT.post({ action: "qrTrangThai", ma: maQR }), khoa = o.yc.map((y) => y.id).join(",");
+    if (khoa === xemXin.khoa) return;          // không vẽ lại khi danh sách yêu cầu không đổi (tránh bấm trượt nút)
+    xemXin.khoa = khoa;
+    $("xinNoi").innerHTML = o.yc.map((y) => `<div class="xin"><div>📱 <b>${CT.esc(y.tb)}</b> muốn chấm bài bằng tài khoản của Thầy/Cô</div>
+      <div style="display:flex;gap:6px;margin-top:6px"><button class="luc" data-ok="${y.id}">✓ Cho phép</button><button class="do" data-no="${y.id}">✕ Từ chối</button></div></div>`).join("");
+    document.querySelectorAll("[data-ok],[data-no]").forEach((b) => (b.onclick = async () => {
+      b.disabled = true; try { await CT.post({ action: "qrDuyet", ma: maQR, id: b.dataset.ok || b.dataset.no, dongY: !!b.dataset.ok }); } catch (e) {}
+      b.closest(".xin").remove(); xemXin.khoa = null;
+    }));
+  } catch (e) {}
+}
+taoQR(); setInterval(xemXin, 2500);
 let sau = 0, dem = 0;
 async function poll() {
   try {

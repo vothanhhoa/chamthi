@@ -39,14 +39,23 @@
         <option value="24-4">Phiếu tô 24-4 (24 câu ABCD + 4 câu Đúng/Sai) – THPT</option>
         <option value="12-4">Phiếu tô 12-4 (12 câu ABCD + 4 câu Đúng/Sai, có tự luận)</option>
         <option value="VT">Phiếu viết chữ A/B/C/D (in từ trang này) – Tiểu học, THCS</option>
+        <option value="AI">Phiếu tự soạn của giáo viên, mọi môn (AI đọc ảnh bài làm)</option>
       </select></div>
-      <div id="oSoCau" hidden><label>Số câu (1–40)</label><input id="soCau" type="number" min="1" max="40" value="20"></div>
+      <div id="oSoCau" hidden><label>Số câu ABCD (0–40)</label><input id="soCau" type="number" min="0" max="40" value="20"></div>
+      <div id="oSoY2" hidden><label>Phần Đúng/Sai</label><select id="soY2"><option value="16">4 câu × 4 ý</option><option value="0">Không có</option></select></div>
     </div>
     <div class="row">
       <div><label>Điểm mỗi câu ABCD</label><input id="d1" value="0,25"></div>
       <div id="oD2"><label>Điểm mỗi ý Đúng/Sai</label><input id="d2" value="0,25"></div>
       <div><label>Có phần tự luận?</label><select id="coTL"><option value="0">Không</option><option value="1">Có</option></select></div>
       <div><label>Điểm tối đa tự luận</label><input id="dTL" value="0"></div>
+    </div>
+    <div id="oTL" hidden style="border:1px dashed var(--vien);border-radius:10px;padding:10px;margin-top:8px">
+      <label><b>Hướng dẫn chấm tự luận</b> (dán từ tệp Word: các ý, điểm từng ý, đáp án gợi ý). AI dựa vào đây để gợi ý điểm; giáo viên duyệt hoặc sửa trước khi lưu.</label>
+      <textarea id="hdTL" style="min-height:140px;font-family:inherit;font-size:14px" placeholder="a) Chỉ ra thói quen chưa hợp lí và đề xuất 03 việc làm tiết kiệm điện (1,5 điểm; mỗi việc 0,5 điểm)…&#10;b) Nêu 02 tính năng an ninh, an toàn và giải thích (1,5 điểm; mỗi tính năng 0,75 điểm)…"></textarea>
+      <div class="row"><div><label>Mức chấm</label><select id="mucCham">
+        <option value="chitiet">Chi tiết (khó) – bám sát từng ý</option><option value="vua" selected>Vừa (phù hợp) – chấp nhận diễn đạt khác đúng ý</option>
+        <option value="thoang">Thoáng – khuyến khích, ý gần đúng cho phần lớn điểm</option></select></div></div>
     </div>
     <p class="muted" id="tongDiem"></p>
     <label>Đáp án: mỗi mã đề một dòng <span class="muted" id="viDu"></span></label>
@@ -83,23 +92,32 @@
 <script>
 const $ = (id) => document.getElementById(id);
 let DS = [], KQ = [], KT = null;
-const MAU = { "24-4": "Tô 24-4", "12-4": "Tô 12-4", VT: "Viết chữ" };
-function soCau() { return $("mau").value === "VT" ? Math.max(1, Math.min(40, Number($("soCau").value) || 1)) : $("mau").value === "24-4" ? 24 : 12; }
+const MAU = { "24-4": "Tô 24-4", "12-4": "Tô 12-4", VT: "Viết chữ", AI: "Tự soạn (AI đọc)" };
+function soCau() {
+  const m = $("mau").value, v = Number($("soCau").value);
+  if (m === "VT") return Math.max(1, Math.min(40, v || 1));
+  if (m === "AI") return Math.max(0, Math.min(40, isNaN(v) ? 0 : v));
+  return m === "24-4" ? 24 : 12;
+}
+function soY2() { const m = $("mau").value; return m === "VT" ? 0 : m === "AI" ? Number($("soY2").value) : 16; }
 function capNhatMau() {
-  const vt = $("mau").value === "VT", n = soCau();
-  $("oSoCau").hidden = !vt; $("oD2").hidden = vt;
-  $("viDu").textContent = vt ? `(ví dụ: 1 ABCDABCD… đủ ${n} chữ; chỉ 1 đề thì mã đề ghi 1)` : `(ví dụ: 101 ${"ABCD".repeat(6).slice(0, n)} ĐSĐSSĐĐS… – ${n} chữ ABCD rồi 16 chữ Đ/S)`;
-  const t = n * (typeof diemCau === "function" ? diemCau() : CT.num($("d1").value)) + (vt ? 0 : 16 * CT.num($("d2").value)) + ($("coTL").value === "1" ? CT.num($("dTL").value) : 0);
+  const m = $("mau").value, vt = m === "VT", n = soCau(), n2 = soY2();
+  $("oSoCau").hidden = !(vt || m === "AI"); $("oSoY2").hidden = m !== "AI"; $("oD2").hidden = !n2;
+  $("oTL").hidden = $("coTL").value !== "1";
+  $("viDu").textContent = vt ? `(ví dụ: 1 ABCDABCD… đủ ${n} chữ; chỉ 1 đề thì mã đề ghi 1)`
+    : !n && !n2 ? "(bài chỉ có tự luận: để trống ô đáp án)"
+    : `(ví dụ: 101 ${"ABCD".repeat(10).slice(0, n)}${n2 ? " " + "ĐSĐS".repeat(4).slice(0, n2) : ""} – ${n} chữ ABCD${n2 ? ` rồi ${n2} chữ Đ/S` : ""})`;
+  const t = n * (typeof diemCau === "function" ? diemCau() : CT.num($("d1").value)) + n2 * CT.num($("d2").value) + ($("coTL").value === "1" ? CT.num($("dTL").value) : 0);
   $("tongDiem").textContent = `Tổng điểm tối đa: ${CT.fmt(t)}${Math.abs(t - 10) > 0.001 ? " ⚠ chưa bằng 10 – kiểm tra lại điểm mỗi câu" : " ✓"}`;
   xemTruoc();
 }
 function xemTruoc() {
-  const r = CT.docDapAn($("dapAn").value, $("mau").value, soCau()), ks = Object.keys(r.dapAn);
+  const r = CT.docDapAn($("dapAn").value, $("mau").value, soCau(), soY2()), ks = Object.keys(r.dapAn);
   $("xemTruoc").innerHTML = (ks.length ? `<span class="tag ok">Đọc được ${ks.length} mã đề: ${ks.map(CT.esc).join(", ")}</span>` : "") +
     r.loi.slice(0, 5).map((l) => `<div class="tag canh" style="margin:3px 0">${CT.esc(l)}</div>`).join("");
   return r;
 }
-["mau", "soCau", "d1", "d2", "coTL", "dTL"].forEach((k) => ($(k).oninput = $(k).onchange = capNhatMau));
+["mau", "soCau", "soY2", "d1", "d2", "coTL", "dTL"].forEach((k) => ($(k).oninput = $(k).onchange = capNhatMau));
 $("dapAn").oninput = xemTruoc;
 // phiếu viết chữ: mặc định chia đều 10 điểm cho số câu (giữ số chính xác, ví dụ 30 câu = 1/3 điểm mỗi câu)
 let d1Tu = true;
@@ -111,7 +129,7 @@ function diemCau() { return $("mau").value === "VT" && d1Tu ? 10 / soCau() : CT.
 
 function moi() {
   const u = CT.toi() || {};
-  ["kiThiId", "ten", "lop", "khoi", "dapAn"].forEach((k) => ($(k).value = ""));
+  ["kiThiId", "ten", "lop", "khoi", "dapAn", "hdTL"].forEach((k) => ($(k).value = "")); $("soY2").value = "16"; $("mucCham").value = "vua";
   $("mon").value = u.mon || ""; $("truong").value = u.truong || ""; $("mau").value = "24-4"; $("d1").value = "0,25"; d1Tu = true; $("d2").value = "0,25"; $("coTL").value = "0"; $("dTL").value = "0";
   $("tdSua").textContent = "1. Tạo bài kiểm tra mới"; KT = null; nutPhu(); capNhatMau();
 }
@@ -127,12 +145,15 @@ $("moi").onclick = () => { moi(); $("khuSua").scrollIntoView({ behavior: "smooth
 $("luuKT").onclick = async () => {
   const r = xemTruoc();
   if (!$("ten").value.trim()) return CT.toast("Nhập tên bài kiểm tra", "loi");
-  if (!Object.keys(r.dapAn).length) return CT.toast("Chưa có đáp án hợp lệ", "loi");
+  const chiTL = $("mau").value === "AI" && !soCau() && !soY2();
+  if (!chiTL && !Object.keys(r.dapAn).length) return CT.toast("Chưa có đáp án hợp lệ", "loi");
+  if ($("coTL").value === "1" && $("mau").value === "AI" && !$("hdTL").value.trim()) CT.toast("Nên dán hướng dẫn chấm tự luận để AI gợi ý điểm sát hơn", "");
   $("luuKT").disabled = true;
   try {
     const o = await CT.post({ action: "luuKiThi", dapAn: r.dapAn, kiThi: { id: $("kiThiId").value || null, ten: $("ten").value.trim(), mon: $("mon").value.trim(),
       truong: $("truong").value.trim(), lop: $("lop").value.trim(), khoi: $("khoi").value.trim(), mau: $("mau").value, soCau: soCau(),
-      diemP1: diemCau(), diemP2: $("mau").value === "VT" ? 0 : CT.num($("d2").value), coTL: $("coTL").value === "1", diemTL: CT.num($("dTL").value) } });
+      diemP1: diemCau(), diemP2: soY2() ? CT.num($("d2").value) : 0, coTL: $("coTL").value === "1", diemTL: CT.num($("dTL").value),
+      soY2: soY2(), hdTL: $("hdTL").value.trim(), mucCham: $("mucCham").value } });
     $("kiThiId").value = o.id; $("tdSua").textContent = "1. Sửa bài: " + $("ten").value; nutPhu();
     CT.toast("Đã lưu bài kiểm tra", "ok"); await taiDS(); $("chonKT").value = o.id;
   } catch (e) { CT.toast(e.message, "loi"); }
@@ -161,8 +182,9 @@ async function sua(id) {
   try {
     const k = await CT.post({ action: "layKiThi", id }); KT = k;
     $("kiThiId").value = k.id; $("ten").value = k.ten; $("mon").value = k.mon; $("truong").value = k.truong; $("lop").value = k.lop; $("khoi").value = k.khoi;
-    $("mau").value = k.mau; $("soCau").value = k.soCau || 20; $("d1").value = CT.fmt(k.diemP1); d1Tu = k.mau === "VT" && Math.abs(k.diemP1 * k.soCau - 10) < 1e-6; $("d2").value = CT.fmt(k.diemP2 || 0.25);
+    $("mau").value = k.mau; $("soCau").value = k.mau === "AI" ? k.soCau : k.soCau || 20; $("d1").value = CT.fmt(k.diemP1); d1Tu = k.mau === "VT" && Math.abs(k.diemP1 * k.soCau - 10) < 1e-6; $("d2").value = CT.fmt(k.diemP2 || 0.25);
     $("coTL").value = k.coTL ? "1" : "0"; $("dTL").value = CT.fmt(k.diemTL);
+    $("soY2").value = String(k.soY2 === 0 ? 0 : 16); $("hdTL").value = k.hdTL || ""; $("mucCham").value = k.mucCham || "vua";
     $("dapAn").value = Object.keys(k.dapAn).map((m) => `${m} ${k.dapAn[m].p1.join("")}${k.dapAn[m].p2.length ? " " + k.dapAn[m].p2.join("") : ""}`).join("\n");
     $("tdSua").textContent = "1. Sửa bài: " + k.ten; capNhatMau(); nutPhu();
     $("khuSua").scrollIntoView({ behavior: "smooth" });
@@ -182,7 +204,8 @@ function veBang() {
   $("bang").innerHTML = KQ.length ? KQ.map((r, i) => `<tr><td>${CT.esc(r.lop)}</td><td>${CT.esc(r.sbd)}</td><td style="text-align:left">${CT.esc(r.ten)}</td><td>${CT.esc(r.made)}</td><td>${CT.fmt(r.diemTN)}</td>
     <td>${KT.coTL ? `<input style="width:70px" value="${CT.fmt(r.diemTL)}" data-i="${i}" class="tl" inputmode="decimal">` : "–"}</td>
     <td id="tong${i}"><b>${CT.fmt(r.tong)}</b></td><td>${r.co ? `<span class="tag canh" title="${CT.esc(r.co)}">${CT.esc(String(r.co).slice(0, 40))}</span>` : ""}</td>
-    <td style="white-space:nowrap">${r.coAnh ? `<button class="nho phu" data-anh="${i}">Ảnh</button>` : ""} <button class="nho do" data-xkq="${i}">Xoá</button></td></tr>`).join("")
+    <td style="white-space:nowrap">${r.coAnh ? `<button class="nho phu" data-anh="${i}">Ảnh</button>` : ""} ${r.coAnhTL ? `<button class="nho phu" data-anhtl="${i}">Ảnh TL</button>` : ""}
+      ${r.nhanXet ? `<button class="nho phu" data-nx="${i}" title="Nhận xét tự luận">💬</button>` : ""} <button class="nho do" data-xkq="${i}">Xoá</button></td></tr>`).join("")
     : `<tr><td colspan="9" class="muted">Chưa có bài nào được chấm.</td></tr>`;
   document.querySelectorAll("input.tl").forEach((el) => (el.onchange = async () => {
     const r = KQ[el.dataset.i], v = el.value.trim() === "" ? "" : CT.num(el.value);
@@ -194,6 +217,14 @@ function veBang() {
     b.disabled = true;
     try { $("hopAnh").src = await CT.post({ action: "layAnh", id: KQ[b.dataset.anh].id }); $("hop").hidden = false; } catch (e) { CT.toast(e.message, "loi"); }
     b.disabled = false;
+  }));
+  document.querySelectorAll("[data-anhtl]").forEach((b) => (b.onclick = async () => {
+    b.disabled = true;
+    try { $("hopAnh").src = await CT.post({ action: "layAnh", id: KQ[b.dataset.anhtl].id, loai: "TL" }); $("hop").hidden = false; } catch (e) { CT.toast(e.message, "loi"); }
+    b.disabled = false;
+  }));
+  document.querySelectorAll("[data-nx]").forEach((b) => (b.onclick = () => {
+    const r = KQ[b.dataset.nx]; alert(`Nhận xét tự luận – ${r.sbd}${r.diemAI !== "" ? ` (AI gợi ý ${CT.fmt(r.diemAI)} điểm)` : ""}:\n\n${r.nhanXet}`);
   }));
   document.querySelectorAll("[data-xkq]").forEach((b) => (b.onclick = async () => {
     const r = KQ[b.dataset.xkq]; if (!confirm(`Xoá bài SBD/STT ${r.sbd}? (xoá cả ảnh phiếu)`)) return;
@@ -212,9 +243,10 @@ function thongKe() {
 }
 $("xuat").onclick = () => {
   if (!KQ.length) return CT.toast("Chưa có dữ liệu – bấm Xem trước", "loi");
-  const rows = [["STT", "Lớp", "SBD/STT", "Họ tên", "Mã đề", "Điểm trắc nghiệm", "Điểm tự luận", "Điểm (nhập vnEdu)", "Ghi chú", "Giáo viên chấm"]];
-  KQ.forEach((r, i) => rows.push([i + 1, r.lop, r.sbd, r.ten || "", r.made, Number(r.diemTN), r.diemTL === "" ? "" : Number(r.diemTL), Math.round(Number(r.tong) * 10) / 10, r.co || "", r.gv || ""]));
-  const ws = XLSX.utils.aoa_to_sheet(rows); ws["!cols"] = [6, 8, 10, 24, 8, 10, 10, 12, 30, 20].map((w) => ({ wch: w }));
+  const rows = [["STT", "Lớp", "SBD/STT", "Họ tên", "Mã đề", "Điểm trắc nghiệm", "Điểm tự luận", "Điểm (nhập vnEdu)", "AI gợi ý TL", "Nhận xét tự luận", "Ghi chú", "Giáo viên chấm"]];
+  KQ.forEach((r, i) => rows.push([i + 1, r.lop, r.sbd, r.ten || "", r.made, Number(r.diemTN), r.diemTL === "" ? "" : Number(r.diemTL), Math.round(Number(r.tong) * 10) / 10,
+    r.diemAI === "" || r.diemAI === undefined ? "" : Number(r.diemAI), r.nhanXet || "", r.co || "", r.gv || ""]));
+  const ws = XLSX.utils.aoa_to_sheet(rows); ws["!cols"] = [6, 8, 10, 24, 8, 10, 10, 12, 10, 40, 30, 20].map((w) => ({ wch: w }));
   const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Bang_diem");
   const ten = ("Diem_" + (KT ? KT.ten : "")).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").replace(/[^\w-]+/g, "_").replace(/_+/g, "_").slice(0, 60);
   XLSX.writeFile(wb, `${ten}${$("locLop").value ? "_" + $("locLop").value : ""}.xlsx`);
