@@ -18,6 +18,8 @@
       <div style="flex:2 1 240px"><label>Bài kiểm tra</label><select id="kiThi"><option value="">– Đang tải –</option></select></div>
       <div><label>Lớp đang chấm</label><input id="lop" placeholder="VD: 12A1" list="dsLop"><datalist id="dsLop"></datalist></div>
     </div>
+    <label class="muted" style="display:flex;gap:8px;align-items:flex-start;margin-top:8px"><input type="checkbox" id="chatSBD" style="width:auto;margin-top:4px">
+      <span><b>Bắt buộc đọc đúng số báo danh</b> (thi cuối kì). Bỏ chọn khi kiểm tra giữa kì, học sinh đã ghi tên trên phiếu: máy tự đánh số thứ tự, không báo lỗi số báo danh.</span></label>
     <p class="muted" id="phienInfo"></p>
     <div class="muted" id="goiY" style="margin:6px 0 10px"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -38,19 +40,19 @@
 
   <section class="card ketqua" id="ketQua" hidden>
     <div class="row">
-      <div style="flex:1 1 300px" id="oAnh"><canvas id="anhKQ" style="width:100%;border-radius:8px;border:1px solid var(--vien)"></canvas></div>
+      <div style="flex:1 1 300px" id="oAnh"><canvas id="anhKQ" style="width:100%;max-height:44vh;object-fit:contain;border-radius:8px;border:1px solid var(--vien);background:#f2f3f4"></canvas></div>
       <div style="flex:1 1 300px">
         <div class="muted">Điểm trắc nghiệm</div><div class="diem" id="diem">–</div>
         <div class="row" style="margin-top:8px">
           <div><label>SBD / STT</label><input id="sbd" inputmode="numeric"></div>
-          <div><label>Mã đề</label><input id="made" list="dsMade"><datalist id="dsMade"></datalist></div>
+          <div><label>Mã đề</label><select id="made"></select></div>
         </div>
         <div id="oTen"><label>Họ tên học sinh (không bắt buộc)</label><input id="hoTenHS"></div>
         <div id="co"></div>
         <div class="luoi" id="luoi"></div>
-        <div class="row" style="margin-top:12px">
-          <button class="luc" id="luu">💾 Lưu kết quả</button>
-          <button class="phu" id="boQua">Bỏ qua / phiếu khác</button>
+        <div class="row thanhLuu" style="margin-top:12px">
+          <button class="luc" id="luu" style="flex:2 1 180px;font-size:18px;padding:14px">💾 Lưu &amp; quét tiếp</button>
+          <button class="phu" id="boQua">↺ Quét lại</button>
         </div>
       </div>
     </div>
@@ -69,7 +71,7 @@
 <script>
 const $ = (id) => document.getElementById(id);
 const qs = new URLSearchParams(location.search), phien = qs.get("phien") || "";
-let KT = null, LAYOUT = null, DSKT = [], stream = null, loopOn = false, last = null, cur = null, saved = [], stt = 0;
+let daLuu = null, vang = 0, chup = null, dangChup = false, KT = null, LAYOUT = null, DSKT = [], stream = null, loopOn = false, last = null, cur = null, saved = [], stt = 0;
 if (qs.get("lop")) $("lop").value = qs.get("lop");
 if (phien) $("phienInfo").innerHTML = `📺 Đã kết nối màn hình lớp <b>${CT.esc(qs.get("lop") || "")}</b>: bài chấm xong sẽ hiện lên tivi.`;
 
@@ -91,6 +93,17 @@ function goiY() {
     : "📄 <b>Phiếu tô:</b> đặt phiếu trên mặt phẳng, đủ sáng, thấy đủ 4 ô vuông đen ở góc. Máy tự đọc SBD, mã đề và đáp án.";
 }
 $("kiThi").onchange = goiY;
+$("chatSBD").onchange = () => { if (KT) CT.LS.set("chatSBD_" + KT.id, $("chatSBD").checked ? "1" : "0"); };
+const chat = () => $("chatSBD").checked;
+/* Mã đề đọc thiếu (ví dụ 2?5): nếu chỉ khớp đúng 1 mã đề trong đáp án thì tự điền */
+function doanMaDe(m) {
+  if (KT.dapAn[m]) return m;
+  const ks = Object.keys(KT.dapAn);
+  if (ks.length === 1) return ks[0];
+  if (!m || !m.includes("?")) return "";
+  const re = new RegExp("^" + m.replace(/\?/g, ".") + "$"), hop = ks.filter((k) => re.test(k));
+  return hop.length === 1 ? hop[0] : "";
+}
 
 async function chuanBi() {
   const id = $("kiThi").value;
@@ -101,14 +114,18 @@ async function chuanBi() {
   KT.n = KT.mau === "VT" ? KT.soCau : KT.mau === "24-4" ? 24 : 12;
   KT.n2 = KT.mau === "VT" ? 0 : 16;
   LAYOUT = KT.mau === "VT" ? VT.layout(KT.soCau) : (await CT.loadLayouts())[KT.mau];
-  $("dsMade").innerHTML = Object.keys(KT.dapAn).map((m) => `<option value="${CT.esc(m)}">`).join("");
+  $("made").innerHTML = `<option value="">– chọn –</option>` + Object.keys(KT.dapAn).map((m) => `<option value="${CT.esc(m)}">${CT.esc(m)}</option>`).join("");
+  $("chatSBD").checked = CT.LS.get("chatSBD_" + KT.id, "0") === "1";
   $("sub").textContent = `${KT.ten} · lớp ${$("lop").value.trim()}`;
 }
 
 $("batDau").onclick = async () => {
   try {
     await chuanBi();
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 2560 }, height: { ideal: 1440 } }, audio: false });
+    const tr = stream.getVideoTracks()[0];
+    try { await tr.applyConstraints({ advanced: [{ focusMode: "continuous" }] }); } catch (e) {}
+    try { chup = "ImageCapture" in window ? new ImageCapture(tr) : null; } catch (e) { chup = null; }
     $("video").srcObject = stream; await $("video").play();
     $("khuQuet").hidden = false; $("caiDat").hidden = true; loopOn = true; quetLoop();
   } catch (e) { CT.toast(e.message || "Không mở được camera – kiểm tra quyền camera của trình duyệt", "loi"); }
@@ -166,14 +183,32 @@ async function quetLoop() {
     let sig = "";
     if (r.ok) sig = r.kind === "vt" ? r.p1.join("") : r.sbd + "|" + r.made + "|" + r.p1.join("") + "|" + r.p2.join("");
     $("cam").classList.toggle("thay", r.ok);
-    $("hint").textContent = r.ok ? "Đã thấy phiếu – giữ yên…" : "Đưa phiếu vào khung, đủ 4 ô vuông đen ở góc";
-    if (r.ok && sig === last) {
-      const full = docAnh(work, 1800);
-      if (full.ok) { navigator.vibrate && navigator.vibrate(120); hienKetQua(full, work); if (tuLuuDuoc()) luu(); }
-      last = null;
+    // phiếu vừa lưu vẫn còn dưới camera: chờ đổi phiếu khác (hoặc nhấc phiếu ra) rồi mới chấm tiếp
+    if (!r.ok) { if (++vang >= 2) daLuu = null; } else vang = 0;
+    const cu = r.ok && daLuu && giong(sig, daLuu);
+    $("hint").textContent = cu ? "✓ Phiếu này đã lưu – đưa phiếu tiếp theo" : r.ok ? "Đã thấy phiếu – giữ yên…" : "Đưa phiếu vào khung, đủ 4 ô vuông đen ở góc";
+    if (r.ok && !cu && sig === last && !dangChup) {
+      dangChup = true; $("hint").textContent = "Đang chụp…";
+      let src = work, full = null;
+      // ảnh tĩnh của camera nét hơn khung hình video (Android Chrome); không được thì dùng khung hình
+      if (chup) try {
+        const bm = await createImageBitmap(await chup.takePhoto());
+        const c = document.createElement("canvas"); c.width = bm.width; c.height = bm.height; c.getContext("2d").drawImage(bm, 0, 0);
+        const f2 = docAnh(c, 2000); if (f2.ok) { src = c; full = f2; }
+      } catch (e) { chup = null; }
+      if (!full) full = docAnh(work, 1800);
+      if (full.ok) { navigator.vibrate && navigator.vibrate(120); full.sig = sig; hienKetQua(full, src); if (tuLuuDuoc()) await luu(); }
+      dangChup = false; last = null;
     } else last = sig;
   }
   setTimeout(quetLoop, 300);
+}
+/* Hai lần đọc là cùng một tờ phiếu nếu đáp án gần như trùng khớp (cho phép lệch vài ô do ánh sáng) */
+function giong(a, b) {
+  if (a === b) return true;
+  const n = Math.min(a.length, b.length); let khac = Math.abs(a.length - b.length);
+  for (let i = 0; i < n; i++) if (a[i] !== b[i]) khac++;
+  return khac <= 3;
 }
 function trung(sbd) { return !!sbd && saved.some((s) => s.sbd === sbd); }
 function tuLuuDuoc() {
@@ -199,12 +234,20 @@ function loiHienTai() {
 function hienKetQua(r, src) {
   cur = Object.assign(r, { src, canXem: r.canXem || [] });
   const vt = r.kind === "vt";
+  if (r.kind === "to") {
+    r.made = doanMaDe(r.made) || r.made;
+    if (KT.dapAn[r.made]) r.flags = r.flags.filter((f) => !/^Mã đề/.test(f));
+    if (!chat()) {
+      r.flags = r.flags.filter((f) => !/^Số báo danh/.test(f));
+      if (!/^\d+$/.test(r.sbd || "") || trung(r.sbd)) r.sbd = "STT" + String(stt + 1).padStart(2, "0");
+    }
+  }
   if (vt) {
     // phiếu viết tay: STT tự tăng, chỉ có 1 mã đề thì tự điền
     r.sbd = String(stt + 1);
     const ms = Object.keys(KT.dapAn); r.made = ms.length === 1 ? ms[0] : (CT.LS.get("madeVT", "") in KT.dapAn ? CT.LS.get("madeVT", "") : "");
   }
-  $("sbd").value = r.sbd || ""; $("made").value = r.made || ""; $("hoTenHS").value = "";
+  $("sbd").value = r.sbd || ""; $("made").value = KT.dapAn[r.made] ? r.made : ""; $("hoTenHS").value = "";
   $("oAnh").hidden = !src; $("oTen").hidden = r.kind === "to";
   if (src) {
     const sd = src.getContext("2d").getImageData(0, 0, src.width, src.height).data;
@@ -213,7 +256,7 @@ function hienKetQua(r, src) {
     cur.anhGoc = document.createElement("canvas"); cur.anhGoc.width = wp.w; cur.anhGoc.height = wp.h; cur.anhGoc.getContext("2d").drawImage(c, 0, 0);
   }
   veSua(); capNhat();
-  $("ketQua").hidden = false; $("ketQua").scrollIntoView({ behavior: "smooth" });
+  $("ketQua").hidden = false; $("khuQuet").hidden = true; window.scrollTo({ top: 0 });
 }
 
 /* Lưới sửa đáp án: phiếu viết tay hiện ảnh từng ô */
@@ -258,7 +301,7 @@ function capNhat() {
     }
   }
 }
-$("made").oninput = () => { if (cur) capNhat(); };
+$("made").onchange = () => { if (cur) capNhat(); };
 $("sbd").oninput = () => { if (cur) capNhat(); };
 
 function jpeg(canvas, maxSide, q) {
@@ -280,16 +323,23 @@ async function luu() {
     await CT.post({ action: "luuKetQua", kiThiId: KT.id, lop: $("lop").value.trim(), phien, sbd, made, hoTenHS: $("hoTenHS").value.trim(),
       p1: cur.p1, p2: cur.p2, diem: g.diem, co, sai, cach: cur.kind,
       anh: cur.src ? jpeg($("anhKQ"), 1280, 0.72) : "", anhNho: cur.src ? jpeg($("anhKQ"), 640, 0.6) : "" });
-    if (cur.kind === "vt") { stt = Number(sbd) || stt + 1; CT.LS.set("madeVT", made); }
+    stt = cur.kind === "vt" ? Number(sbd) || stt + 1 : stt + 1;
+    if (cur.kind === "vt") CT.LS.set("madeVT", made);
+    if (cur.sig) { daLuu = cur.sig; vang = 0; }
     saved.push({ sbd, made, diem: g.diem, co: co.length });
     $("dem").textContent = saved.length;
     $("ds").innerHTML = saved.map((s, i) => `<tr><td>${i + 1}</td><td>${CT.esc(s.sbd)}</td><td>${CT.esc(s.made)}</td><td><b>${CT.fmt(s.diem)}</b></td><td>${s.co ? '<span class="tag canh">đã xem lại</span>' : '<span class="tag ok">ổn</span>'}</td></tr>`).reverse().join("");
     CT.toast(`Đã lưu ${sbd}: ${CT.fmt(g.diem)} điểm`, "ok");
+    $("hint").textContent = `✓ Đã lưu ${sbd}: ${CT.fmt(g.diem)} điểm – đưa phiếu tiếp theo`;
     dong();
   } catch (e) { CT.toast(e.message, "loi"); }
   $("luu").disabled = false;
 }
-function dong() { $("ketQua").hidden = true; cur = null; if (window._res) { const f = window._res; window._res = null; f(); } if (stream) $("khuQuet").scrollIntoView({ behavior: "smooth" }); }
+function dong() {
+  $("ketQua").hidden = true; cur = null;
+  if (window._res) { const f = window._res; window._res = null; f(); }
+  if (stream) { $("khuQuet").hidden = false; window.scrollTo({ top: 0 }); }
+}
 $("luu").onclick = luu;
 $("boQua").onclick = dong;
 if (CT.canDangNhap()) taiKiThi();

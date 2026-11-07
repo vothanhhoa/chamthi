@@ -29,22 +29,24 @@
   }
 
   /* Tìm các ô vuông đen đặc (ô định vị). */
-  function findSquares(g, w, h) {
+  function findSquares(g, w, h, f) {
+    f = f || 0.6;
     const I = integral(g, w, h), win = Math.max(15, Math.round(Math.min(w, h) / 12));
     const bin = new Uint8Array(w * h);
     for (let y = 0; y < h; y++)
       for (let x = 0; x < w; x++) {
         const m = boxMean(I, w, h, x - win, y - win, x + win, y + win);
-        bin[y * w + x] = g[y * w + x] < m * 0.6 && g[y * w + x] < 140 ? 1 : 0;
+        bin[y * w + x] = g[y * w + x] < m * f && g[y * w + x] < 130 + (f - 0.6) * 160 ? 1 : 0;
       }
-    const seen = new Uint8Array(w * h), out = [], stack = new Int32Array(w * h);
-    const md = Math.min(w, h), amin = Math.pow(md * 0.008, 2), amax = Math.pow(md * 0.07, 2);
+    const seen = new Uint8Array(w * h), out = [], stack = new Int32Array(w * h), buf = new Int32Array(w * h);
+    const md = Math.min(w, h), amin = Math.max(16, Math.pow(md * 0.0055, 2)), amax = Math.pow(md * 0.07, 2);
     for (let s = 0; s < w * h; s++) {
       if (!bin[s] || seen[s]) continue;
       let sp = 0, area = 0, sx = 0, sy = 0, x0 = w, y0 = h, x1 = 0, y1 = 0;
       stack[sp++] = s; seen[s] = 1;
       while (sp) {
         const p = stack[--sp], px = p % w, py = (p - px) / w;
+        if (area < buf.length) buf[area] = p;
         area++; sx += px; sy += py;
         if (px < x0) x0 = px; if (px > x1) x1 = px; if (py < y0) y0 = py; if (py > y1) y1 = py;
         const nb = [p - 1, p + 1, p - w, p + w];
@@ -55,9 +57,15 @@
           if (bin[q] && !seen[q]) { seen[q] = 1; stack[sp++] = q; }
         }
       }
+      if (area < amin || area > amax) continue;
       const bw = x1 - x0 + 1, bh = y1 - y0 + 1, fill = area / (bw * bh), asp = bw / bh;
-      if (area >= amin && area <= amax && asp > 0.6 && asp < 1.65 && fill > 0.7)
-        out.push({ x: sx / area, y: sy / area, s: Math.sqrt(area), fill });
+      if (asp < 0.6 || asp > 1.65 || fill < 0.45) continue;
+      // Ô vuông (xoay bao nhiêu cũng vậy): diện tích / (khoảng cách xa nhất từ tâm)^2 ≈ 2; hình tròn ≈ 3,14
+      const cx = sx / area, cy = sy / area;
+      let m2 = 0;
+      for (let i = 0; i < area; i++) { const p = buf[i], px = p % w, py = (p - px) / w, d = (px - cx) * (px - cx) + (py - cy) * (py - cy); if (d > m2) m2 = d; }
+      const R = area / Math.max(1, m2);
+      if (R > 1.55 && R < 2.55) out.push({ x: cx, y: cy, s: Math.sqrt(area), fill, R });
     }
     return out;
   }
@@ -114,25 +122,68 @@
 
   const TPL = [[0, 0], [1, 0], [1, 1], [0, 1]];
 
+  /* Độ tương phản của một ô vuông kiểm tra: trong ô phải đen hơn hẳn vùng giấy xung quanh (0 = không có, 1 = rất rõ). */
+  function contrast(g, w, h, H, L, u, v) {
+    const [x, y] = apply(H, u, v);
+    const r = Math.hypot(...[0, 1].map((i) => apply(H, u + L.r, v)[i] - apply(H, u, v)[i]));
+    const inner = diskMean(g, w, h, x, y, Math.max(1.5, r * 0.75));
+    let ring = 0, n = 0;
+    for (let k = 0; k < 8; k++) {
+      const a = (k * Math.PI) / 4, px = x + Math.cos(a) * r * 2.8, py = y + Math.sin(a) * r * 2.8;
+      if (px < 0 || py < 0 || px >= w || py >= h) return 0;
+      ring += diskMean(g, w, h, px, py, Math.max(1, r * 0.5)); n++;
+    }
+    ring /= n;
+    return ring > 0 ? Math.max(0, 1 - inner / ring) : 0;
+  }
+
+  /* Tìm 4 góc phiếu: thử nhiều bộ ô vuông ứng viên (gần 4 góc ảnh), giữ bộ mà các ô kiểm tra
+     trên phiếu đều đen rõ và tỉ lệ khung đúng khổ phiếu – tránh nhận nhầm ô vuông nhỏ trong phiếu. */
+  function locate(g, w, h, L, sq) {
+    const dirs = [(p) => -(p.x + p.y), (p) => p.x - p.y, (p) => p.x + p.y, (p) => p.y - p.x];
+    const cands = dirs.map((f) => sq.slice().sort((a, b) => f(b) - f(a)).slice(0, 5));
+    const ratio0 = L.ratio || 1447 / 2135;
+    let best = null;
+    for (const a of cands[0]) for (const b of cands[1]) for (const c of cands[2]) for (const d of cands[3]) {
+      if (new Set([a, b, c, d]).size < 4) continue;
+      const q = [a, b, c, d];
+      // tứ giác lồi, đủ lớn (phiếu chiếm ít nhất 12% khung hình)
+      let area = 0, sgn = 0, convex = true;
+      for (let i = 0; i < 4; i++) {
+        const p0 = q[i], p1 = q[(i + 1) % 4], p2 = q[(i + 2) % 4];
+        area += p0.x * p1.y - p1.x * p0.y;
+        const cr = (p1.x - p0.x) * (p2.y - p1.y) - (p1.y - p0.y) * (p2.x - p1.x);
+        if (sgn === 0) sgn = Math.sign(cr); else if (Math.sign(cr) !== sgn) convex = false;
+      }
+      if (!convex || Math.abs(area) / 2 < w * h * 0.12) continue;
+      for (let k = 0; k < 4; k++) {
+        const H = homography(TPL, [0, 1, 2, 3].map((i) => [q[(i + k) % 4].x, q[(i + k) % 4].y]));
+        const o = apply(H, 0, 0), t = apply(H, 1, 0), l = apply(H, 0, 1);
+        const rat = Math.hypot(t[0] - o[0], t[1] - o[1]) / Math.max(1, Math.hypot(l[0] - o[0], l[1] - o[1]));
+        if (rat < ratio0 * 0.65 || rat > ratio0 * 1.45) continue;
+        const cs = L.check.map(([u, v]) => contrast(g, w, h, H, L, u, v));
+        const mn = Math.min(...cs), sc = cs.reduce((x, y) => x + y, 0) + mn * 2;
+        if (!best || sc > best.sc) best = { k, H, sc, mn, q };
+      }
+    }
+    return best;
+  }
+
   function read(g, w, h, L, opts) {
     opts = opts || {};
-    const sq = findSquares(g, w, h);
-    const q = pickCorners(sq);
-    if (!q) return { ok: false, error: "Không thấy đủ 4 ô định vị ở góc phiếu", squares: sq.length };
-    // Thử 4 hướng xoay, chọn hướng mà các ô vuông kiểm tra (giữa phiếu) đều đen.
-    let best = null;
-    for (let k = 0; k < 4; k++) {
-      const dst = [0, 1, 2, 3].map((i) => [q[(i + k) % 4].x, q[(i + k) % 4].y]);
-      const H = homography(TPL, dst);
-      const rpx = Math.hypot(...[0, 1].map((i) => apply(H, 0.5 + L.r, 0.5)[i] - apply(H, 0.5, 0.5)[i]));
-      let sc = 0;
-      for (const [u, v] of L.check) {
-        const [x, y] = apply(H, u, v);
-        sc += 255 - diskMean(g, w, h, x, y, rpx * 0.9);
-      }
-      if (!best || sc > best.sc) best = { k, H, rpx, sc };
+    // dò ô vuông ở ngưỡng thường (giấy trắng); nếu chưa ra phiếu thì dò thêm ngưỡng cho giấy xám, thiếu sáng
+    const sq = findSquares(g, w, h, 0.6), minC = opts.minCheck || 0.28;
+    let best = sq.length >= 4 ? locate(g, w, h, L, sq) : null;
+    if (!best || best.mn < minC) {
+      for (const p of findSquares(g, w, h, 0.74)) if (!sq.some((o) => Math.hypot(o.x - p.x, o.y - p.y) < Math.max(3, o.s * 0.5))) sq.push(p);
+      const b2 = sq.length >= 4 ? locate(g, w, h, L, sq) : null;
+      if (b2 && (!best || b2.sc > best.sc)) best = b2;
     }
-    const { H, rpx } = best;
+    if (sq.length < 4) return { ok: false, error: "Chưa thấy đủ 4 ô vuông đen ở góc phiếu – đưa cả tờ phiếu vào khung", squares: sq.length };
+    if (!best || best.mn < minC)
+      return { ok: false, error: "Chưa thấy trọn tờ phiếu – đưa cả tờ vào khung, đủ 4 góc, giữ thẳng", squares: sq.length };
+    const q = best.q;
+    const H = best.H, rpx = Math.hypot(...[0, 1].map((i) => apply(H, 0.5 + L.r, 0.5)[i] - apply(H, 0.5, 0.5)[i]));
     const meas = (u, v) => {
       const [x, y] = apply(H, u, v);
       return { x, y, m: diskMean(g, w, h, x, y, Math.max(1.5, rpx * 0.55)) };
@@ -218,6 +269,6 @@
     return { data: out, w: W, h: Hh };
   }
 
-  const api = { toGray, read, grade, shrink, warp, findSquares, homography, apply };
+  const api = { toGray, read, grade, shrink, warp, findSquares, homography, apply, locate, contrast };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.OMR = api;
 })(typeof self !== "undefined" ? self : this);
