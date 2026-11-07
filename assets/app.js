@@ -73,6 +73,46 @@
     });
     return { dapAn: out, loi };
   }
+  /* Dải chữ chạy đầu trang + chân trang + thống kê truy cập (mọi trang, trừ màn hình tivi) */
+  const PHIEN_BAN = "07/11 – 4.2";
+  function trangTri() {
+    if (document.body.classList.contains("tv") || document.body.dataset.tron === "khong") return;
+    const bang = document.createElement("div");
+    bang.className = "bang";
+    bang.innerHTML = `<div class="ray"><span class="chay"><img src="assets/logo.png" alt="Logo THPT Bình Mỹ"><b>CHẤM THI TRẮC NGHIỆM BẰNG ĐIỆN THOẠI – THPT BÌNH MỸ – GV: VÕ THANH HÒA ✿</b></span></div>
+      <span class="dem">👁 Lượt truy cập: <span data-tk="tong">…</span></span>`;
+    document.body.insertBefore(bang, document.body.firstChild);
+    const ft = document.createElement("footer");
+    ft.className = "chantrang";
+    ft.innerHTML = `<div class="cot">
+      <div><div class="tg"><img src="assets/logo.png" alt=""><div><h3>📝 Chấm thi bằng điện thoại</h3><p>Quét phiếu bằng camera điện thoại, có điểm ngay – miễn phí cho mọi giáo viên</p></div></div>
+        <p>Tác giả: <b>Thầy Võ Thanh Hòa</b><br>Trường THPT Bình Mỹ, Bình Mỹ, An Giang</p>
+        <p>✉️ <a href="mailto:vothanhhoa3004@gmail.com">vothanhhoa3004@gmail.com</a></p></div>
+      <div><h3>👩‍🏫 Dành cho giáo viên</h3><p>Tiểu học, THCS, THPT – <b>phiếu tô TNMaker 24-4, 12-4</b> và <b>phiếu viết chữ A, B, C, D</b></p>
+        <p>Chiếu kết quả lên tivi lớp, thống kê câu sai, xuất Excel nhập vnEdu</p><p>Chương trình GDPT 2018</p></div>
+      <div><h3>🔗 Liên kết</h3><ul>
+        <li>📷 <a href="quet.html">Quét chấm bài</a></li><li>📝 <a href="kithi.html">Bài kiểm tra của tôi</a></li>
+        <li>🖨 <a href="phieu.html">In phiếu viết chữ</a></li><li>📖 <a href="huong-dan.html">Hướng dẫn sử dụng</a></li>
+        <li>🛠 <a href="https://vothanhhoa.github.io/thuchanh/" target="_blank" rel="noopener">Làm bài thực hành (HS)</a></li></ul></div>
+      <div><h3>📊 Thống kê truy cập</h3><div class="so">
+        <span>Hôm nay: <b data-tk="homNay">…</b></span><span>Tổng lượt: <b data-tk="tong">…</b></span>
+        <span>Người truy cập: <b data-tk="nguoi">…</b></span><span>Giáo viên tham gia: <b data-tk="soGV">…</b></span>
+        <span>Bài đã chấm: <b data-tk="soBai">…</b></span></div></div></div>
+      <div class="duoi">© 2026 Chấm thi bằng điện thoại – Thầy Võ Thanh Hòa, Trường THPT Bình Mỹ. Sản phẩm ứng dụng AI trong dạy học. · <b>Phiên bản ${PHIEN_BAN}</b></div>`;
+    document.body.appendChild(ft);
+    thongKe();
+  }
+  /* Đếm lượt: mỗi phiên trình duyệt tính 1 lượt; mỗi máy tính 1 người */
+  async function thongKe() {
+    if (!ready()) return;
+    let moi = "0", dem = "0";
+    try { if (!localStorage.getItem("ct_khach")) { localStorage.setItem("ct_khach", "1"); moi = "1"; } } catch (e) {}
+    try { if (!sessionStorage.getItem("ct_daDem")) { sessionStorage.setItem("ct_daDem", "1"); dem = "1"; } } catch (e) {}
+    try {
+      const d = await get({ api: "thongKe", dem, moi });
+      document.querySelectorAll("[data-tk]").forEach((el) => { const v = d[el.dataset.tk]; if (v !== undefined) el.textContent = Number(v).toLocaleString("vi-VN"); });
+    } catch (e) {}
+  }
   window.CT = { LS, apiUrl, ready, get, post, loadLayouts, toast, fmt, num, esc, toi, daDangNhap, canDangNhap, luuPhien, dangXuat, thanhTK, docDapAn };
-  document.addEventListener("DOMContentLoaded", thanhTK);
+  document.addEventListener("DOMContentLoaded", () => { thanhTK(); trangTri(); });
 })();

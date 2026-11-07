@@ -69,3 +69,30 @@ td .nho{padding:4px 9px;font-size:13px;border-radius:7px}
 .vto .chon button.on{background:var(--xanh);color:#fff;border-color:var(--xanh)}
 /* nút lưu luôn ở đáy màn hình điện thoại khi xem kết quả */
 .thanhLuu{position:sticky;bottom:0;background:#fff;padding:10px 0 12px;z-index:5;box-shadow:0 -8px 12px -10px rgba(0,0,0,.25)}
+/* ---------- dải chữ chạy (logo dẫn đầu, chữ rượt theo) ---------- */
+.bang{background:linear-gradient(90deg,#063a7a,#0a57c2 60%,#0b63d6);border-bottom:4px solid #f5c518;display:flex;align-items:center;gap:10px;padding:6px 14px;overflow:hidden}
+.bang .ray{flex:1;overflow:hidden;white-space:nowrap;min-width:0;mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
+.bang .chay{display:inline-flex;align-items:center;gap:12px;padding-left:100%;animation:chayChu 22s linear -8s infinite}
+.bang .chay img{width:46px;height:46px;border-radius:50%;box-shadow:0 0 0 3px #f5c518,0 2px 8px rgba(0,0,0,.4);animation:xoayLogo 6s linear infinite}
+.bang .chay b{color:#ffe14d;font-size:21px;font-weight:800;letter-spacing:.3px;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.bang:hover .chay{animation-play-state:paused}
+@keyframes chayChu{to{transform:translateX(-100%)}}
+@keyframes xoayLogo{0%,80%{transform:rotate(0)}90%{transform:rotate(-12deg) scale(1.08)}100%{transform:rotate(0)}}
+.bang .dem{flex:0 0 auto;color:#fff;border:1.5px solid #f5c518;background:rgba(0,0,0,.25);border-radius:999px;padding:4px 12px;font-weight:700;font-size:14px;white-space:nowrap}
+@media (max-width:640px){.bang .chay b{font-size:16px}.bang .chay img{width:36px;height:36px}.bang .dem{font-size:12px;padding:3px 9px}}
+@media (prefers-reduced-motion:reduce){.bang .chay{animation-duration:60s}}
+/* ---------- chân trang ---------- */
+.chantrang{background:linear-gradient(120deg,#0b2b26,#0f4a3c);color:#e6f2ee;border-top:5px solid #f5c518;margin-top:30px;padding:26px 16px 14px;font-size:15px}
+.chantrang .cot{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.35fr 1fr 1fr 1fr;gap:24px}
+.chantrang h3{margin:0 0 10px;font-size:17px;color:#fff}
+.chantrang a{color:#ffd54a;text-decoration:none}.chantrang a:hover{text-decoration:underline}
+.chantrang .tg{display:flex;gap:12px;align-items:center}.chantrang .tg img{width:92px;height:92px;border-radius:50%;box-shadow:0 0 0 3px #f5c518;flex:0 0 auto}
+.chantrang .tg h3{font-size:22px;margin:0 0 4px}
+.chantrang p{margin:6px 0;line-height:1.5}
+.chantrang ul{list-style:none;padding:0;margin:0}.chantrang li{margin:7px 0}
+.chantrang .so{display:flex;flex-wrap:wrap;gap:8px}
+.chantrang .so span{background:#10283f;border:1px solid #2d4b6b;border-radius:10px;padding:7px 12px;color:#e6eef8}.chantrang .so b{color:#fff}
+.chantrang .duoi{max-width:1200px;margin:18px auto 0;border-top:1px solid rgba(255,255,255,.15);padding-top:12px;text-align:center;font-size:13px;color:#b9d3cb}
+@media (max-width:900px){.chantrang .cot{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.chantrang .cot{grid-template-columns:1fr}}
+@media print{.bang,.chantrang{display:none!important}}
